@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Caesar Cipher & Sensitive Filter Tool</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #f0f0f0;
+        padding: 20px;
+        max-width: 900px;
+        margin: auto;
+    }
+    h2 {
+        margin-bottom: 5px;
+    }
+    small {
+        color: #555;
+    }
+    textarea {
+        width: 100%;
+        height: 140px;
+        padding: 10px;
+        font-size: 16px;
+        margin-bottom: 10px;
+        resize: vertical;
+        box-sizing: border-box;
+    }
+    button {
+        padding: 10px 20px;
+        margin: 5px 5px 15px 0;
+        font-size: 16px;
+        cursor: pointer;
+        border: none;
+        border-radius: 5px;
+        background: #ddd;
+        transition: 0.2s;
+    }
+    button.active {
+        background: #4287f5;
+        color: white;
+        font-weight: bold;
+    }
+    input[type=number] {
+        padding: 5px;
+        width: 80px;
+        font-size: 16px;
+        margin-bottom: 10px;
+    }
+    .note {
+        font-size: 13px;
+        color: #666;
+        margin-bottom: 10px;
+    }
+</style>
+</head>
+<body>
+
+<h2>🔐 Công cụ mã hóa nâng cao</h2>
+<small>Dùng cho nhiệm vụ game, mã hóa, giải mã, đảo chữ, và lọc từ nhạy cảm.</small>
+
+<br><br>
+
+<label for="inputText"><b>Văn bản gốc / cần xử lý:</b></label>
+<textarea id="inputText" oninput="updateOutput()"
+          placeholder="Nhập đoạn thoại, nhiệm vụ hoặc tin nhắn..."></textarea>
+
+<label for="shift"><b>Shift (Caesar Cipher):</b></label><br>
+<input type="number" id="shift" value="3" oninput="updateOutput()">
+
+<div class="note">
+    • Mã hóa = Caesar + Lọc từ nhạy cảm → mã số.<br>
+    • Giải mã = Caesar decode + dịch mã số → từ gốc cho admin.<br>
+    • Đảo chữ = đảo thứ tự ký tự, không dùng Caesar và không lọc nhạy cảm.
+</div>
+
+<button id="encodeBtn" class="active" onclick="setMode('encode')">Mã hóa (Encode)</button>
+<button id="decodeBtn" onclick="setMode('decode')">Giải mã (Decode)</button>
+<button id="reverseBtn" onclick="setMode('reverse')">Đảo chữ (Reverse)</button>
+
+<h3>Kết quả:</h3>
+<textarea id="outputText" readonly placeholder="Kết quả sẽ xuất hiện tại đây..."></textarea>
+
+<script>
+/* ======================= TỪ NHẠY CẢM ======================= */
+const sensitiveMap = {
+    "lồn": "#9939#",
+    "Lồn": "#9939#",
+    "địt": "#8003#",
+    "Địt": "#L8003#",
+};
+
+const reverseSensitiveMap = {
+    "#9939#": "lồn",
+    "#8003#": "địt",
+    "#L8003#": "Địt",
+};
+
+function escapeRegExp(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function filterSensitive(text) {
+    let output = text;
+    for (const key in sensitiveMap) {
+        const escaped = escapeRegExp(key);
+        const regex = new RegExp(escaped, "g");
+        output = output.replace(regex, sensitiveMap[key]);
+    }
+    return output;
+}
+
+function reverseSensitive(text) {
+    let output = text;
+    for (const code in reverseSensitiveMap) {
+        const escaped = escapeRegExp(code);
+        const regex = new RegExp(escaped, "g");
+        output = output.replace(regex, reverseSensitiveMap[code]);
+    }
+    return output;
+}
+
+/* ======================= CAESAR CIPHER ======================= */
+function caesar(str, shift) {
+    shift = shift % 26;
+    let output = "";
+
+    for (let i = 0; i < str.length; i++) {
+        let c = str[i];
+        if (c.match(/[a-z]/i)) {
+            let code = str.charCodeAt(i);
+            if (code >= 65 && code <= 90) {
+                c = String.fromCharCode(((code - 65 + shift + 26) % 26) + 65);
+            } else if (code >= 97 && code <= 122) {
+                c = String.fromCharCode(((code - 97 + shift + 26) % 26) + 97);
+            }
+        }
+        output += c;
+    }
+    return output;
+}
+
+/* ======================= ĐẢO CHỮ ======================= */
+function reverseText(str) {
+    return str.split("").reverse().join("");
+}
+
+/* ======================= CHẾ ĐỘ ======================= */
+let mode = "encode";
+
+function setMode(newMode) {
+    mode = newMode;
+
+    document.getElementById("encodeBtn").classList.toggle("active", mode === "encode");
+    document.getElementById("decodeBtn").classList.toggle("active", mode === "decode");
+    document.getElementById("reverseBtn").classList.toggle("active", mode === "reverse");
+
+    updateOutput();
+}
+
+/* ======================= XỬ LÝ ======================= */
+function updateOutput() {
+    let text = document.getElementById("inputText").value;
+    let shift = parseInt(document.getElementById("shift").value);
+    if (isNaN(shift)) shift = 0;
+
+    let result = "";
+
+    if (mode === "encode") {
+        text = filterSensitive(text);
+        result = caesar(text, shift);
+
+    } else if (mode === "decode") {
+        result = caesar(text, -shift);
+        result = reverseSensitive(result);
+
+    } else if (mode === "reverse") {
+        result = reverseText(text);
+    }
+
+    document.getElementById("outputText").value = result;
+}
+</script>
+
+</body>
+</html>
