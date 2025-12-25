@@ -49,25 +49,6 @@
     height:20px;
     border:2px solid black;
   }
-  /* Đạn của tỏi biến dị */
-  .bullet.garlic-bullet{
-    background: #ff66b2;
-    width: 12px;
-    height: 12px;
-    border: 1px solid #cc0066;
-    box-shadow: 0 0 5px #ff3399;
-  }
-  /* Đạn của cay18 - đạn ném */
-  .bullet.cay18-bullet {
-    background: url('dancay18.png') center/cover no-repeat;
-    width: 25px;
-    height: 25px;
-    border-radius: 50%;
-    border: 2px solid #8B0000;
-    box-shadow: 0 0 10px #FF4500;
-    z-index: 950;
-  }
-  
   #panel{text-align:center;margin:10px;}
   button{margin:2px 4px;padding:5px 10px;cursor:pointer;}
   #scoreBoard{
@@ -212,60 +193,6 @@ button {
   50% { filter: brightness(1.5); }
 }
 
-/* Hiệu ứng cho cây cay17 khi bị tấn công */
-.plant.cay17.garlic-hit {
-  animation: garlicFlash 0.5s;
-  box-shadow: 0 0 15px purple;
-}
-
-@keyframes garlicFlash {
-  0%, 100% { 
-    filter: brightness(1) hue-rotate(0deg); 
-    transform: translate(-50%, -50%) scale(1);
-  }
-  50% { 
-    filter: brightness(1.3) hue-rotate(180deg); 
-    transform: translate(-50%, -50%) scale(1.1);
-  }
-}
-
-/* Hiệu ứng cho cây cay18 khi bị tấn công */
-.plant.cay18.hit {
-  animation: cay18Flash 0.5s;
-  box-shadow: 0 0 20px #FF4500;
-}
-
-@keyframes cay18Flash {
-  0%, 100% { 
-    filter: brightness(1) hue-rotate(0deg); 
-    transform: translate(-50%, -50%) scale(1);
-  }
-  50% { 
-    filter: brightness(1.5) hue-rotate(90deg); 
-    transform: translate(-50%, -50%) scale(1.2);
-  }
-}
-
-/* Hiệu ứng cho zombie khi bị tỏi tấn công */
-.zombie.garlic-effect {
-  border: 2px solid purple !important;
-  box-shadow: 0 0 10px purple;
-  animation: garlicZombie 5s linear;
-}
-
-@keyframes garlicZombie {
-  0% { border-color: purple; }
-  50% { border-color: #ff66ff; }
-  100% { border-color: purple; }
-}
-
-/* Hiệu ứng cho zombie khi bị cay18 tấn công */
-.zombie.cay18-slow {
-  border: 2px solid #FF4500 !important;
-  box-shadow: 0 0 15px #FF8C00;
-  filter: brightness(0.8) sepia(1) hue-rotate(-30deg);
-}
-
 /* Hiệu ứng cho zombie khi bị tấn công bởi cay14 */
 .zombie.hit-by-cay14 {
   animation: hitFlash 0.5s;
@@ -308,58 +235,6 @@ button {
 @keyframes explosionPulse {
   0% { transform: scale(0.1); opacity: 1; }
   100% { transform: scale(1.5); opacity: 0; }
-}
-
-/* Hiệu ứng đạn tỏi */
-.garlic-bullet-trail {
-  position: absolute;
-  width: 8px;
-  height: 8px;
-  background: rgba(255, 102, 178, 0.5);
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 400;
-  animation: garlicTrail 0.3s forwards;
-}
-
-@keyframes garlicTrail {
-  0% { transform: scale(1); opacity: 1; }
-  100% { transform: scale(0); opacity: 0; }
-}
-
-/* Hiệu ứng đạn ném cay18 */
-.cay18-throw-effect {
-  position: absolute;
-  width: 15px;
-  height: 15px;
-  background: radial-gradient(circle, rgba(255,69,0,0.7) 0%, rgba(255,69,0,0) 70%);
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 400;
-  animation: cay18Throw 0.5s forwards;
-}
-
-@keyframes cay18Throw {
-  0% { transform: scale(1); opacity: 1; }
-  100% { transform: scale(2); opacity: 0; }
-}
-
-/* Hiệu ứng đạn nảy cay18 */
-.cay18-bounce-effect {
-  position: absolute;
-  width: 20px;
-  height: 20px;
-  background: radial-gradient(circle, rgba(255,140,0,0.8) 0%, rgba(255,140,0,0) 70%);
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 400;
-  animation: cay18Bounce 0.3s forwards;
-}
-
-@keyframes cay18Bounce {
-  0% { transform: scale(0.5); opacity: 1; }
-  50% { transform: scale(1.2); opacity: 0.8; }
-  100% { transform: scale(1); opacity: 0; }
 }
 </style>
 </head>
@@ -420,14 +295,6 @@ button {
 <div class="shop-item" id="cay16" onclick="selectPlant('cay16')" title="Giá: 1500 - Mìn hắc diệp thạch (3000 máu, hồi 1 HP/s cho toàn bộ cây, khi bị tấn công gây 30 sát thương toàn sân)">
   <img src="cay16.png" alt="Mìn hắc diệp thạch">
 </div>
-<!-- Cây tỏi biến dị -->
-<div class="shop-item" id="cay17" onclick="selectPlant('cay17')" title="Giá: 2000 - Tỏi biến dị (Bắn đạn tầm 2 ô, 10 sát thương + bật lùi 0.5 ô, khi bị tấn công đẩy zombie sang hàng khác + làm chậm 80% 5s)">
-  <img src="cay17.png" alt="Tỏi biến dị">
-</div>
-<!-- Cây tỏi biến dị phiên bản ném đạn -->
-<div class="shop-item" id="cay18" onclick="selectPlant('cay18')" title="Giá: 50000 - Tỏi biến dị ném đạn (30 máu, ném đạn nảy, 30 sát thương + 3 đạn nảy 20 sát thương, giảm tốc 30% vĩnh viễn, khi bị tấn công đẩy zombie + giảm 99% tốc 10s)">
-  <img src="cay18.png" alt="Tỏi biến dị ném đạn">
-</div>
   <div class="shop-item" id="noSelect" onclick="deselectPlant()" title="Không chọn cây">
   <img src="no_select_icon.png" alt="Không chọn cây">
   </div>
@@ -443,9 +310,6 @@ button {
 <audio id="shootSound" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
 <audio id="boomSound" src="https://actions.google.com/sounds/v1/explosions/explosion.ogg"></audio>
 <audio id="dieSound" src="https://actions.google.com/sounds/v1/cartoon/pop.ogg"></audio>
-<audio id="garlicSound" src="https://actions.google.com/sounds/v1/cartoon/slide_whistle.ogg"></audio>
-<audio id="throwSound" src="https://actions.google.com/sounds/v1/cartoon/boing.ogg"></audio>
-<audio id="bounceSound" src="https://actions.google.com/sounds/v1/cartoon/cartoon_bounce.ogg"></audio>
 
 <script>
 // =============== CẤU HÌNH DỄ CHỈNH SỬA ===============
@@ -658,58 +522,6 @@ const PLANT_CONFIG = {
         explosionDamage: 30,
         explosionOnHit: true
       }
-    },
-    cay17: {
-      name: "Tỏi biến dị",
-      cost: 2000,
-      hp: 80,
-      image: "cay17.png",
-      width: 60,
-      height: 60,
-      action: {
-        type: "garlic",
-        interval: 2000,
-        bullet: { 
-          color: "garlic-bullet", 
-          power: 10, 
-          count: 1, 
-          knock: true,
-          knockDistance: 0.5,
-          range: 2
-        },
-        defenseEffect: {
-          teleportDistance: 1,
-          slowAmount: 0.8,
-          slowDuration: 5000
-        }
-      }
-    },
-    cay18: {
-      name: "Tỏi biến dị ném đạn",
-      cost: 0,
-      hp: 80,
-      maxHp: 80,
-      image: "cay18.png",
-      width: 65,
-      height: 65,
-      action: {
-        type: "thrower",
-        interval: 3000,
-        bullet: {
-          image: "dancay18.png",
-          mainDamage: 30,
-          bounceDamage: 20,
-          bounceCount: 3,
-          slowAmount: 0.3,
-          maxSlow: 1.0,
-          throwHeight: 60
-        },
-        defenseEffect: {
-          teleportDistance: 1,
-          extremeSlowAmount: 0.99,
-          extremeSlowDuration: 10000
-        }
-      }
     }
   }
 };
@@ -854,210 +666,6 @@ const THAYMA4_SPAWN_TIME = 90;
 const THAYMA5_SPAWN_TIME = 120;
 const THAYMA6_SPAWN_TIME = 60;
 
-// Hàm tạo hiệu ứng đạn tỏi
-function createGarlicTrail(x, y) {
-  const trail = document.createElement("div");
-  trail.className = "garlic-bullet-trail";
-  trail.style.left = x + "px";
-  trail.style.top = y + "px";
-  game.appendChild(trail);
-  
-  setTimeout(() => {
-    if (trail.parentNode) {
-      trail.parentNode.removeChild(trail);
-    }
-  }, 300);
-}
-
-// Hàm tạo hiệu ứng ném đạn
-function createThrowEffect(x, y) {
-  const effect = document.createElement("div");
-  effect.className = "cay18-throw-effect";
-  effect.style.left = x + "px";
-  effect.style.top = y + "px";
-  game.appendChild(effect);
-  
-  setTimeout(() => {
-    if (effect.parentNode) {
-      effect.parentNode.removeChild(effect);
-    }
-  }, 500);
-}
-
-// Hàm tạo hiệu ứng đạn nảy
-function createBounceEffect(x, y) {
-  const effect = document.createElement("div");
-  effect.className = "cay18-bounce-effect";
-  effect.style.left = x + "px";
-  effect.style.top = y + "px";
-  game.appendChild(effect);
-  
-  setTimeout(() => {
-    if (effect.parentNode) {
-      effect.parentNode.removeChild(effect);
-    }
-  }, 300);
-}
-
-// Hàm áp dụng hiệu ứng làm chậm vĩnh viễn cho zombie
-function applyPermanentSlow(zombie, slowAmount, maxSlow) {
-  if (zombie.immuneToControl) return;
-  
-  // Khởi tạo tổng lượng làm chậm nếu chưa có
-  if (!zombie.totalSlowAmount) {
-    zombie.totalSlowAmount = 0;
-  }
-  
-  // Tính toán lượng làm chậm mới
-  const newSlowAmount = Math.min(maxSlow, zombie.totalSlowAmount + slowAmount);
-  const additionalSlow = newSlowAmount - zombie.totalSlowAmount;
-  
-  if (additionalSlow > 0) {
-    // Cập nhật tổng lượng làm chậm
-    zombie.totalSlowAmount = newSlowAmount;
-    
-    // Áp dụng làm chậm
-    zombie.slow = 1 - zombie.totalSlowAmount;
-    
-    // Thêm hiệu ứng trực quan
-    zombie.el.classList.add("cay18-slow");
-    
-    // Cập nhật độ sáng dựa trên lượng làm chậm
-    const brightness = 1 - (zombie.totalSlowAmount * 0.5);
-    zombie.el.style.filter = `brightness(${brightness}) sepia(1) hue-rotate(-${zombie.totalSlowAmount * 30}deg)`;
-  }
-}
-
-// Hàm áp dụng hiệu ứng cực chậm tạm thời cho zombie
-function applyExtremeSlow(zombie, slowAmount, duration) {
-  if (zombie.immuneToControl) return;
-  
-  // Lưu tốc độ gốc nếu chưa có
-  if (!zombie.originalSpeed) {
-    zombie.originalSpeed = zombie.speed;
-  }
-  
-  // Áp dụng làm chậm cực mạnh
-  zombie.slow = 1 - slowAmount;
-  
-  // Thêm hiệu ứng trực quan
-  zombie.el.style.boxShadow = "0 0 20px #FF0000";
-  zombie.el.style.filter = "brightness(0.5) blur(1px)";
-  
-  // Di chuyển zombie sang hàng khác gần nhất
-  const possibleRows = [];
-  if (zombie.r > 0) possibleRows.push(zombie.r - 1);
-  if (zombie.r < rows - 1) possibleRows.push(zombie.r + 1);
-  
-  if (possibleRows.length > 0) {
-    const newRow = possibleRows[Math.floor(Math.random() * possibleRows.length)];
-    zombie.r = newRow;
-    
-    // Cập nhật vị trí hiển thị
-    const pos = cellPos(zombie.r, zombie.x);
-    zombie.el.style.top = pos.y + "px";
-  }
-  
-  // Hủy hiệu ứng sau thời gian chỉ định
-  setTimeout(() => {
-    if (zombie.el && zombie.el.parentNode) {
-      zombie.el.style.boxShadow = "";
-      zombie.el.style.filter = "";
-      
-      // Khôi phục tốc độ
-      if (zombie.originalSpeed) {
-        // Giữ lại hiệu ứng làm chậm vĩnh viễn nếu có
-        if (zombie.totalSlowAmount) {
-          zombie.slow = 1 - zombie.totalSlowAmount;
-        } else {
-          zombie.slow = 1;
-        }
-      }
-    }
-  }, duration);
-}
-
-// Hàm tìm 3 zombie gần nhất với zombie mục tiêu
-function findNearestZombies(targetZombie, excludeZombie, count = 3) {
-  const distances = [];
-  
-  zombies.forEach(z => {
-    if (z !== targetZombie && z !== excludeZombie) {
-      // Tính khoảng cách Euclid
-      const distance = Math.sqrt(
-        Math.pow(z.r - targetZombie.r, 2) + 
-        Math.pow(z.x - targetZombie.x, 2)
-      );
-      distances.push({ zombie: z, distance });
-    }
-  });
-  
-  // Sắp xếp theo khoảng cách
-  distances.sort((a, b) => a.distance - b.distance);
-  
-  // Lấy 3 zombie gần nhất
-  return distances.slice(0, count).map(item => item.zombie);
-}
-
-// Hàm tạo đạn nảy từ vị trí zombie
-function createBounceBullet(startX, startY, targetZombie, damage, plant) {
-  const bullet = document.createElement("div");
-  bullet.className = "bullet cay18-bullet";
-  bullet.style.left = startX + "px";
-  bullet.style.top = startY + "px";
-  bullet.style.zIndex = "960";
-  game.appendChild(bullet);
-  
-  // Tìm zombie gần nhất cho đạn nảy tiếp theo
-  const nextTargets = findNearestZombies(targetZombie, targetZombie, 1);
-  let nextTarget = nextTargets[0];
-  
-  // Tính toán vị trí đích nếu có zombie tiếp theo
-  let targetX = startX;
-  let targetY = startY;
-  let hasTarget = false;
-  
-  if (nextTarget) {
-    const targetPos = cellPos(nextTarget.r, nextTarget.x);
-    targetX = targetPos.x;
-    targetY = targetPos.y;
-    hasTarget = true;
-  } else {
-    // Nếu không có zombie tiếp theo, đạn bay thêm một đoạn ngắn
-    targetX = startX + 100;
-    targetY = startY;
-  }
-  
-  // Tính toán quỹ đạo parabol
-  const startTime = Date.now();
-  const duration = hasTarget ? 800 : 500;
-  const controlY = Math.min(startY, targetY) - 40;
-  
-  const bulletObj = {
-    el: bullet,
-    startX: startX,
-    startY: startY,
-    targetX: targetX,
-    targetY: targetY,
-    controlY: controlY,
-    startTime: startTime,
-    duration: duration,
-    damage: damage,
-    target: nextTarget,
-    plant: plant,
-    isBounce: true,
-    hasHit: false,
-    // THÊM: Đánh dấu đã xử lý
-    isProcessed: false
-  };
-  
-  bullets.push(bulletObj);
-  createBounceEffect(startX, startY);
-  document.getElementById("bounceSound").play();
-  
-  return bulletObj;
-}
-
 function selectPlant(t){selectedPlant=t;document.getElementById("selected").textContent="→ "+t;}
 function cellPos(r, c) {
   return {
@@ -1165,8 +773,7 @@ function addPlant(r, c, type) {
     lastHitTime: 0,
     cooldown: false,
     reflectionCount: 0,
-    lastSkillTime: Date.now(),
-    lastAttackTime: 0
+    lastSkillTime: Date.now()
   };
 
   plants.push(p);
@@ -1236,44 +843,6 @@ function createMineExplosionEffect(x, y) {
       explosionEl.parentNode.removeChild(explosionEl);
     }
   }, 800);
-}
-
-// Hàm áp dụng hiệu ứng tỏi lên zombie (cho cay17)
-function applyGarlicEffect(zombie, plant) {
-  if (zombie.immuneToControl) return;
-  
-  const config = plant.config.action.defenseEffect;
-  
-  // Làm chậm zombie
-  if (!zombie.originalSpeed) {
-    zombie.originalSpeed = zombie.speed;
-  }
-  zombie.slow = 0.2;
-  
-  // Thêm hiệu ứng trực quan
-  zombie.el.classList.add("garlic-effect");
-  
-  // Di chuyển zombie sang hàng khác gần nhất
-  const possibleRows = [];
-  if (zombie.r > 0) possibleRows.push(zombie.r - 1);
-  if (zombie.r < rows - 1) possibleRows.push(zombie.r + 1);
-  
-  if (possibleRows.length > 0) {
-    const newRow = possibleRows[Math.floor(Math.random() * possibleRows.length)];
-    zombie.r = newRow;
-    
-    const pos = cellPos(zombie.r, zombie.x);
-    zombie.el.style.top = pos.y + "px";
-  }
-  
-  setTimeout(() => {
-    if (zombie.el && zombie.el.parentNode) {
-      zombie.el.classList.remove("garlic-effect");
-      if (zombie.originalSpeed) {
-        zombie.slow = 1;
-      }
-    }
-  }, config.slowDuration);
 }
 
 function spawnZombie() {
@@ -1760,16 +1329,21 @@ function update() {
             // Xử lý khi zombie tấn công cây cay16 (mìn)
             if (targetPlant.type === "cay16" && targetPlant.config.action.explosionOnHit) {
               const now = Date.now();
+              // Kiểm tra cooldown cho mìn (tránh nổ liên tục)
               if (now - targetPlant.lastHitTime > 1000) {
+                // Kích hoạt hiệu ứng mìn nổ
                 const pos = cellPos(targetPlant.r, targetPlant.c);
                 createMineExplosionEffect(pos.x, pos.y);
                 document.getElementById("boomSound").play();
                 
+                // Gây sát thương cho tất cả zombie trên sân
                 const explosionDamage = targetPlant.config.action.explosionDamage || 30;
                 zombies.forEach(zombie => {
+                  // Trừ thây ma tối thượng khỏi hiệu ứng nổ nếu nó miễn nhiễm
                   if (!(zombie.type === "thayma6" && zombie.config.immuneToExplosion)) {
                     zombie.hp -= explosionDamage;
                     
+                    // Hiệu ứng trực quan cho zombie bị tấn công
                     zombie.el.style.boxShadow = "0 0 10px orange";
                     setTimeout(() => {
                       if (zombie.el) zombie.el.style.boxShadow = "";
@@ -1777,6 +1351,7 @@ function update() {
                   }
                 });
                 
+                // Hiệu ứng trực quan cho mìn
                 targetPlant.el.classList.add("hit");
                 setTimeout(() => {
                   if (targetPlant.el) targetPlant.el.classList.remove("hit");
@@ -1784,31 +1359,6 @@ function update() {
                 
                 targetPlant.lastHitTime = now;
               }
-            }
-            
-            // Xử lý khi zombie tấn công cây cay17 (tỏi biến dị)
-            if (targetPlant.type === "cay17") {
-              applyGarlicEffect(z, targetPlant);
-              
-              targetPlant.el.classList.add("garlic-hit");
-              setTimeout(() => {
-                if (targetPlant.el) targetPlant.el.classList.remove("garlic-hit");
-              }, 500);
-              
-              document.getElementById("garlicSound").play();
-            }
-            
-            // Xử lý khi zombie tấn công cây cay18 (tỏi biến dị ném đạn)
-            if (targetPlant.type === "cay18") {
-              const config = targetPlant.config.action.defenseEffect;
-              applyExtremeSlow(z, config.extremeSlowAmount, config.extremeSlowDuration);
-              
-              targetPlant.el.classList.add("hit");
-              setTimeout(() => {
-                if (targetPlant.el) targetPlant.el.classList.remove("hit");
-              }, 500);
-              
-              document.getElementById("throwSound").play();
             }
             
             targetPlant.hp -= actualDamage;
@@ -1942,15 +1492,18 @@ function update() {
     
     // Xử lý cay16 - Mìn hắc diệp thạch
     if (p.type === "cay16") {
+      // Hồi máu cho toàn bộ cây trên sân mỗi giây
       if (now - p.lastHealTime > 1000) {
         plants.forEach(plant => {
-          if (plant !== p) {
+          if (plant !== p) { // Không tự hồi máu cho chính mình
             const oldHp = plant.hp;
             plant.hp = Math.min(plant.maxHp || plant.hp, plant.hp + (config.action.healPerSecond || 1));
             plant.hpT.textContent = Math.ceil(plant.hp);
             
+            // Tạo hiệu ứng hồi máu nhẹ
             if (plant.hp > oldHp) {
               const pos = cellPos(plant.r, plant.c);
+              // Chỉ hiển thị hiệu ứng cho 1 cây ngẫu nhiên mỗi lần để tránh lag
               if (Math.random() < 0.1) {
                 createHealEffect(pos.x, pos.y);
               }
@@ -1959,124 +1512,6 @@ function update() {
         });
         
         p.lastHealTime = now;
-      }
-    }
-    
-    // Xử lý cay17 - Tỏi biến dị
-    if (p.type === "cay17") {
-      if (now - p.lastAction > (config.action.interval || 2000)) {
-        const bulletConfig = config.action.bullet;
-        
-        const b = document.createElement("div");
-        b.className = "bullet " + bulletConfig.color;
-        const pos = cellPos(p.r, p.c);
-        b.style.left = (pos.x + 15) + "px";
-        b.style.top = pos.y + "px";
-        game.appendChild(b);
-        
-        // THÊM: Đánh dấu đạn tỏi có tầm bắn
-        bullets.push({
-          r: p.r,
-          x: p.c,
-          el: b,
-          power: bulletConfig.power,
-          knock: bulletConfig.knock || false,
-          knockDistance: bulletConfig.knockDistance || 0.5,
-          direction: 1,
-          enhanced: false,
-          enhancedBy: [],
-          maxRange: bulletConfig.range || 2,
-          startX: p.c,
-          source: "garlic",
-          // THÊM: Đánh dấu đã xử lý
-          isProcessed: false
-        });
-        
-        p.lastAction = now;
-        document.getElementById("shootSound").play();
-        
-        createGarlicTrail(pos.x + 15, pos.y);
-      }
-    }
-    
-    // Xử lý cay18 - Tỏi biến dị ném đạn
-    if (p.type === "cay18") {
-      if (now - p.lastAction > (config.action.interval || 3000)) {
-        const bulletConfig = config.action.bullet;
-        
-        // Tìm zombie gần nhất trong cùng hàng
-        let targetZombie = null;
-        let minDistance = Infinity;
-        
-        zombies.forEach(z => {
-          if (z.r === p.r) {
-            const distance = z.x - p.c;
-            if (distance > 0 && distance < minDistance) {
-              minDistance = distance;
-              targetZombie = z;
-            }
-          }
-        });
-        
-        // Nếu không có zombie trong cùng hàng, tìm zombie gần nhất bất kỳ hàng
-        if (!targetZombie && zombies.length > 0) {
-          zombies.forEach(z => {
-            const distance = Math.sqrt(
-              Math.pow(z.r - p.r, 2) + 
-              Math.pow(z.x - p.c, 2)
-            );
-            if (distance < minDistance) {
-              minDistance = distance;
-              targetZombie = z;
-            }
-          });
-        }
-        
-        if (targetZombie) {
-          // Tạo đạn ném
-          const bullet = document.createElement("div");
-          bullet.className = "bullet cay18-bullet";
-          const startPos = cellPos(p.r, p.c);
-          bullet.style.left = startPos.x + "px";
-          bullet.style.top = startPos.y + "px";
-          bullet.style.zIndex = "950";
-          game.appendChild(bullet);
-          
-          const targetPos = cellPos(targetZombie.r, targetZombie.x);
-          
-          // Tính toán quỹ đạo parabol
-          const startTime = Date.now();
-          const duration = 1500;
-          const throwHeight = bulletConfig.throwHeight || 60;
-          const controlY = Math.min(startPos.y, targetPos.y) - throwHeight;
-          
-          const bulletObj = {
-            el: bullet,
-            startX: startPos.x,
-            startY: startPos.y,
-            targetX: targetPos.x,
-            targetY: targetPos.y,
-            controlY: controlY,
-            startTime: startTime,
-            duration: duration,
-            mainDamage: bulletConfig.mainDamage,
-            bounceDamage: bulletConfig.bounceDamage,
-            bounceCount: bulletConfig.bounceCount,
-            target: targetZombie,
-            plant: p,
-            isThrown: true,
-            hasHit: false,
-            bouncesCreated: 0,
-            // THÊM: Đánh dấu đã xử lý
-            isProcessed: false
-          };
-          
-          bullets.push(bulletObj);
-          createThrowEffect(startPos.x, startPos.y);
-          document.getElementById("throwSound").play();
-          
-          p.lastAction = now;
-        }
       }
     }
     
@@ -2099,9 +1534,7 @@ function update() {
           knock: bulletConfig.knock || false,
           direction: 1,
           enhanced: false,
-          enhancedBy: [],
-          // THÊM: Đánh dấu đã xử lý
-          isProcessed: false
+          enhancedBy: []
         });
         
         p.lastAction = now;
@@ -2136,11 +1569,8 @@ function update() {
     }
   });
 
-  // Xử lý di chuyển và va chạm của đạn
-  bullets.forEach((b, index) => {
-    // ĐÁNH DẤU: Kiểm tra xem đạn đã được xử lý chưa
-    if (b.isProcessed) return;
-    
+  // Di chuyển và xử lý đạn
+  bullets.forEach(b => {
     // Xử lý đạn đi qua cây tăng cường (cay12)
     if (b.direction === 1 && !b.source) {
       plants.forEach(p => {
@@ -2167,144 +1597,6 @@ function update() {
           }
         }
       });
-    }
-    
-    // FIX: Kiểm tra đạn tỏi vượt quá tầm bắn - XÓA ĐẠN
-    if (b.source === "garlic" && b.maxRange) {
-      const distanceTraveled = b.x - b.startX;
-      if (distanceTraveled >= b.maxRange) {
-        // XÓA ĐẠN KHI VƯỢT QUÁ TẦM BẮN
-        if (b.el && b.el.parentNode) {
-          b.el.remove();
-        }
-        bullets.splice(index, 1);
-        return;
-      }
-    }
-    
-    // Xử lý đạn ném (cay18)
-    if (b.isThrown && !b.hasHit) {
-      const elapsed = Date.now() - b.startTime;
-      const progress = Math.min(elapsed / b.duration, 1);
-      
-      // Tính toán vị trí trên đường cong Bezier bậc 2 (parabol)
-      const x = (1 - progress) * (1 - progress) * b.startX + 
-                2 * (1 - progress) * progress * ((b.startX + b.targetX) / 2) + 
-                progress * progress * b.targetX;
-      
-      const y = (1 - progress) * (1 - progress) * b.startY + 
-                2 * (1 - progress) * progress * b.controlY + 
-                progress * progress * b.targetY;
-      
-      b.el.style.left = x + "px";
-      b.el.style.top = y + "px";
-      
-      // Kiểm tra va chạm với zombie mục tiêu
-      if (progress >= 0.95 && b.target && !b.hasHit) {
-        b.hasHit = true;
-        b.isProcessed = true; // ĐÁNH DẤU ĐÃ XỬ LÝ
-        
-        // Gây sát thương chính
-        b.target.hp -= b.mainDamage;
-        
-        // Áp dụng hiệu ứng làm chậm vĩnh viễn
-        applyPermanentSlow(b.target, b.plant.config.action.bullet.slowAmount, 
-                          b.plant.config.action.bullet.maxSlow);
-        
-        // Tạo đạn nảy
-        if (b.bouncesCreated < b.bounceCount) {
-          const targetPos = cellPos(b.target.r, b.target.x);
-          
-          // Tạo 3 đạn nảy
-          for (let i = 0; i < b.bounceCount; i++) {
-            setTimeout(() => {
-              createBounceBullet(targetPos.x, targetPos.y, b.target, b.bounceDamage, b.plant);
-            }, i * 200);
-          }
-          
-          b.bouncesCreated = b.bounceCount;
-        }
-        
-        // XÓA ĐẠN CHÍNH SAU KHI ĐÃ TRÚNG
-        setTimeout(() => {
-          if (b.el && b.el.parentNode) {
-            b.el.remove();
-          }
-          // Tìm và xóa đạn khỏi mảng
-          const bulletIndex = bullets.findIndex(bullet => bullet === b);
-          if (bulletIndex !== -1) {
-            bullets.splice(bulletIndex, 1);
-          }
-        }, 100);
-        
-        return;
-      }
-      
-      // Nếu hết thời gian mà chưa trúng, xóa đạn
-      if (progress >= 1) {
-        b.isProcessed = true;
-        if (b.el && b.el.parentNode) {
-          b.el.remove();
-        }
-        bullets.splice(index, 1);
-      }
-      
-      return;
-    }
-    
-    // Xử lý đạn nảy (cay18)
-    if (b.isBounce && !b.hasHit) {
-      const elapsed = Date.now() - b.startTime;
-      const progress = Math.min(elapsed / b.duration, 1);
-      
-      // Tính toán vị trí trên đường cong Bezier bậc 2
-      const x = (1 - progress) * (1 - progress) * b.startX + 
-                2 * (1 - progress) * progress * ((b.startX + b.targetX) / 2) + 
-                progress * progress * b.targetX;
-      
-      const y = (1 - progress) * (1 - progress) * b.startY + 
-                2 * (1 - progress) * progress * b.controlY + 
-                progress * progress * b.targetY;
-      
-      b.el.style.left = x + "px";
-      b.el.style.top = y + "px";
-      
-      // Kiểm tra va chạm với zombie mục tiêu
-      if (progress >= 0.95 && b.target && !b.hasHit) {
-        b.hasHit = true;
-        b.isProcessed = true;
-        
-        // Gây sát thương
-        b.target.hp -= b.damage;
-        
-        // Áp dụng hiệu ứng làm chậm vĩnh viễn
-        applyPermanentSlow(b.target, b.plant.config.action.bullet.slowAmount, 
-                          b.plant.config.action.bullet.maxSlow);
-        
-        // XÓA ĐẠN NẢY SAU KHI ĐÃ TRÚNG
-        setTimeout(() => {
-          if (b.el && b.el.parentNode) {
-            b.el.remove();
-          }
-          const bulletIndex = bullets.findIndex(bullet => bullet === b);
-          if (bulletIndex !== -1) {
-            bullets.splice(bulletIndex, 1);
-          }
-        }, 100);
-        
-        return;
-      }
-      
-      // Nếu hết thời gian mà chưa trúng, xóa đạn
-      if (progress >= 1) {
-        b.isProcessed = true;
-        if (b.el && b.el.parentNode) {
-          b.el.remove();
-        }
-        bullets.splice(index, 1);
-      }
-      
-      return;
     }
     
     // Đạn của boss di chuyển từ phải sang trái
@@ -2336,17 +1628,13 @@ function update() {
             speed: 0.2,
             source: "reflected",
             enhanced: b.enhanced,
-            enhancedBy: b.enhancedBy ? [...b.enhancedBy] : [],
-            isProcessed: false
+            enhancedBy: b.enhancedBy ? [...b.enhancedBy] : []
           });
           
           reflected = true;
           
-          // XÓA ĐẠN BOSS SAU KHI PHẢN CHIẾU
-          if (b.el && b.el.parentNode) {
-            b.el.remove();
-          }
-          bullets.splice(index, 1);
+          b.el.remove();
+          bullets = bullets.filter(x => x !== b);
           
           if (p.hp <= 0) {
             sun += 1000;
@@ -2354,7 +1642,6 @@ function update() {
             p.el.remove();
             plants = plants.filter(pl => pl !== p);
           }
-          return;
         }
       });
       
@@ -2374,11 +1661,8 @@ function update() {
         });
         
         if (hitPlant || b.x < 0) {
-          // XÓA ĐẠN BOSS SAU KHI TRÚNG CÂY HOẶC RA NGOÀI MÀN HÌNH
-          if (b.el && b.el.parentNode) {
-            b.el.remove();
-          }
-          bullets.splice(index, 1);
+          b.el.remove();
+          bullets = bullets.filter(x => x !== b);
         }
       }
     } else {
@@ -2386,35 +1670,19 @@ function update() {
       b.x += 0.2;
       const pos = cellPos(b.r, b.x);
       b.el.style.left = pos.x + "px";
-      
-      // Tạo hiệu ứng đuôi cho đạn tỏi
-      if (b.source === "garlic" && Math.random() < 0.3) {
-        createGarlicTrail(pos.x, pos.y);
-      }
-      
-      // FIX: Kiểm tra đạn ra ngoài màn hình và xóa
-      if (b.x > cols) {
-        if (b.el && b.el.parentNode) {
-          b.el.remove();
-        }
-        bullets.splice(index, 1);
-      }
     }
   });
 
-  // Kiểm tra đạn của cây bắn vào zombie (trừ đạn ném và đạn nảy)
-  bullets.forEach((b, index) => {
-    if (b.isProcessed) return;
-    
-    if (b.direction === 1 && !b.isThrown && !b.isBounce) {
-      let hitZombie = false;
-      
+  // Kiểm tra đạn của cây bắn vào zombie
+  bullets.forEach(b => {
+    if (b.direction === 1) {
       zombies.forEach(z => {
         if (z.type === "thayma5" || z.type === "thayma6") {
           let hitRange = (z.type === "purple" ? 1.2 : 0.3);
           if (z.r === b.r && Math.abs(z.x - b.x) < hitRange) {
             z.hp -= b.power;
-            hitZombie = true;
+            b.el.remove(); 
+            bullets = bullets.filter(x => x !== b);
           }
         } else {
           let hitRange = (z.type === "purple" ? 1.2 : 0.3);
@@ -2424,40 +1692,22 @@ function update() {
             }
             
             z.hp -= b.power;
-            
-            // Xử lý hiệu ứng bật lùi của đạn tỏi
-            if (b.knockDistance && b.knock) {
-              if (!z.immuneToKnockback) {
-                z.x += b.knockDistance || 0.5;
-                const pos = cellPos(z.r, z.x);
-                z.el.style.left = pos.x + "px";
-              }
-            } else if (b.knock) {
-              if (!z.immuneToKnockback) {
-                z.x += 0.2;
-              }
-            }
-            
             if (b.freeze && !z.frozen) { 
               if (!z.immuneToControl) {
                 z.slow = Math.max(0.01, z.slow - 0.1); 
                 z.frozen = true; 
               }
             }
-            
-            hitZombie = true;
+            if (b.knock) { 
+              if (!z.immuneToKnockback) {
+                z.x += 0.2; 
+              }
+            }
+            b.el.remove(); 
+            bullets = bullets.filter(x => x !== b);
           }
         }
       });
-      
-      // FIX: XÓA ĐẠN SAU KHI BẮN TRÚNG ZOMBIE
-      if (hitZombie) {
-        b.isProcessed = true;
-        if (b.el && b.el.parentNode) {
-          b.el.remove();
-        }
-        bullets.splice(index, 1);
-      }
     }
   });
 
@@ -2515,17 +1765,7 @@ function update() {
     return true;
   });
 
-  // FIX: Lọc đạn đã được xử lý hoặc ra ngoài màn hình
-  bullets = bullets.filter(b => {
-    // Nếu đạn đã được đánh dấu xử lý, loại bỏ
-    if (b.isProcessed) return false;
-    
-    // Giữ lại đạn ném và đạn nảy chưa xử lý
-    if (b.isThrown || b.isBounce) return true;
-    
-    // Loại bỏ đạn thường ngoài phạm vi
-    return b.x < cols && b.x > -5;
-  });
+  bullets = bullets.filter(b => b.x < cols && b.x > -5);
 }
 
 function fireWithMana(p, action) {
@@ -2554,8 +1794,7 @@ function shoot(p, count, color, power, freeze, knock) {
       knock,
       direction: 1,
       enhanced: false,
-      enhancedBy: [],
-      isProcessed: false  // THÊM: Đánh dấu chưa xử lý
+      enhancedBy: []
     });
   }
 }
