@@ -82,20 +82,6 @@
     box-shadow: 0 0 10px #FF4500;
     z-index: 950;
   }
-  /* Đạn được tăng cường bởi cay19 */
-  .bullet.hellfire-enhanced {
-    background: #FF4500 !important;
-    box-shadow: 0 0 15px #FF0000, 0 0 25px #FF8C00 !important;
-    border: 2px solid #FFD700 !important;
-    animation: hellfirePulse 0.5s infinite alternate;
-    transform: scale(1.2);
-    z-index: 1000;
-  }
-  
-  @keyframes hellfirePulse {
-    0% { box-shadow: 0 0 15px #FF0000, 0 0 25px #FF8C00; }
-    100% { box-shadow: 0 0 20px #FF0000, 0 0 30px #FF4500; }
-  }
   
   #panel{text-align:center;margin:10px;}
   button{margin:2px 4px;padding:5px 10px;cursor:pointer;}
@@ -145,12 +131,6 @@ h1 { text-align:center; }
   font-size: 12px;
   border-radius: 5px;
   white-space: nowrap;
-}
-
-.shop-item.disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  filter: grayscale(100%);
 }
 
 button {
@@ -281,34 +261,6 @@ button {
   }
 }
 
-/* Hiệu ứng cho cây cay19 */
-.plant.cay19 {
-  border: 3px solid #8B0000;
-  box-shadow: 0 0 20px #FF4500;
-  animation: hellfireGlow 2s infinite alternate;
-}
-
-@keyframes hellfireGlow {
-  0% { box-shadow: 0 0 20px #FF4500, 0 0 30px #8B0000; }
-  100% { box-shadow: 0 0 25px #FF0000, 0 0 35px #FF8C00; }
-}
-
-.plant.cay19.hit {
-  animation: cay19Hit 0.5s;
-  box-shadow: 0 0 30px #00FF00;
-}
-
-@keyframes cay19Hit {
-  0%, 100% { 
-    filter: brightness(1); 
-    transform: translate(-50%, -50%) scale(1);
-  }
-  50% { 
-    filter: brightness(1.5); 
-    transform: translate(-50%, -50%) scale(1.1);
-  }
-}
-
 /* Hiệu ứng cho zombie khi bị tỏi tấn công */
 .zombie.garlic-effect {
   border: 2px solid purple !important;
@@ -430,23 +382,6 @@ button {
   box-shadow: 0 0 15px #00FF00 !important;
   filter: brightness(1.3) !important;
 }
-
-/* Hiệu ứng hồi máu cho cay19 */
-.hellfire-heal-effect {
-  position: absolute;
-  width: 100px;
-  height: 100px;
-  background: radial-gradient(circle, rgba(255,0,0,0.7) 0%, rgba(255,69,0,0.5) 30%, rgba(255,140,0,0) 70%);
-  border-radius: 50%;
-  animation: hellfireHeal 1.5s ease-out;
-  pointer-events: none;
-  z-index: 500;
-}
-
-@keyframes hellfireHeal {
-  0% { transform: scale(0.1); opacity: 1; }
-  100% { transform: scale(3); opacity: 0; }
-}
 </style>
 </head>
 <body>
@@ -514,10 +449,6 @@ button {
 <div class="shop-item" id="cay18" onclick="selectPlant('cay18')" title="Giá: 50000 - Tỏi biến dị ném đạn (30 máu, ném đạn nảy, 30 sát thương + 3 đạn nảy 20 sát thương, giảm tốc 30% vĩnh viễn, khi bị tấn công đẩy zombie + giảm 99% tốc 10s)">
   <img src="cay18.png" alt="Tỏi biến dị ném đạn">
 </div>
-<!-- Cây 19 - Quả óc chó địa ngục sinh đôi -->
-<div class="shop-item disabled" id="cay19" onclick="selectPlant('cay19')" title="Đã tiêu diệt Sứ giả khe nứt: 0/1 - Giá: 0 (Mở khóa khi tiêu diệt 1 Sứ giả khe nứt)">
-  <img src="cay19.png" alt="Óc chó địa ngục sinh đôi">
-</div>
   <div class="shop-item" id="noSelect" onclick="deselectPlant()" title="Không chọn cây">
   <img src="no_select_icon.png" alt="Không chọn cây">
   </div>
@@ -536,7 +467,6 @@ button {
 <audio id="garlicSound" src="https://actions.google.com/sounds/v1/cartoon/slide_whistle.ogg"></audio>
 <audio id="throwSound" src="https://actions.google.com/sounds/v1/cartoon/boing.ogg"></audio>
 <audio id="bounceSound" src="https://actions.google.com/sounds/v1/cartoon/cartoon_bounce.ogg"></audio>
-<audio id="hellfireSound" src="https://actions.google.com/sounds/v1/fire/fire_large.ogg"></audio>
 
 <script>
 // =============== CẤU HÌNH DỄ CHỈNH SỬA ===============
@@ -801,25 +731,6 @@ const PLANT_CONFIG = {
           extremeSlowDuration: 10000
         }
       }
-    },
-    cay19: {
-      name: "Óc chó địa ngục sinh đôi",
-      cost: 0,
-      baseCost: 0,
-      hp: 30000,
-      maxHp: 30000,
-      image: "cay19.png",
-      width: 85,
-      height: 85,
-      action: {
-        type: "hellfireWalnut",
-        sunPerMana: 300,
-        manaPerSecond: 25,
-        damageReduction: 0.8,
-        healOnHit: 100,
-        bulletEnhanceDamage: 500,
-        blocksZombies: true
-      }
     }
   }
 };
@@ -932,7 +843,7 @@ const ZOMBIE_CONFIG = {
     // THÂY MA 7 - SỨ GIẢ KHE NỨT
     thayma7: {
       name: "Sứ giả khe nứt",
-      baseHp: 60000,
+      baseHp: 10000,
       speed: 0.015,
       attackDamage: 999,
       attackInterval: 3000,
@@ -996,12 +907,6 @@ let thayma8Spawned = false;
 let thayma8Count = 0;
 let thayma7Buffed = false;
 
-// Biến cho cây 19
-let thayma7Kills = 0;
-let cay19Unlocked = false;
-let cay19PurchaseCount = 0;
-let cay19CurrentCost = 0;
-
 // Thời gian spawn các thây ma đặc biệt
 const THAYMA2_SPAWN_TIME = 45;
 const THAYMA3_SPAWN_TIME = 60;
@@ -1013,17 +918,6 @@ const THAYMA8_FIRST_SPAWN_TIME = 180; // 3 phút
 const THAYMA8_SECOND_SPAWN_TIME = 600; // 10 phút
 
 // =============== CÁC HÀM HỖ TRỢ ===============
-function updateCay19ShopItem() {
-  const cay19Item = document.getElementById("cay19");
-  if (cay19Unlocked) {
-    cay19Item.classList.remove("disabled");
-    cay19Item.title = `Đã tiêu diệt Sứ giả khe nứt: ${thayma7Kills}/1 - Giá: ${cay19CurrentCost} (Mỗi lần mua tăng 3000 mặt trời)`;
-  } else {
-    cay19Item.classList.add("disabled");
-    cay19Item.title = `Đã tiêu diệt Sứ giả khe nứt: ${thayma7Kills}/1 - Giá: ${cay19CurrentCost} (Mở khóa khi tiêu diệt 1 Sứ giả khe nứt)`;
-  }
-}
-
 function createGarlicTrail(x, y) {
   const trail = document.createElement("div");
   trail.className = "garlic-bullet-trail";
@@ -1064,20 +958,6 @@ function createBounceEffect(x, y) {
       effect.parentNode.removeChild(effect);
     }
   }, 300);
-}
-
-function createHellfireHealEffect(x, y) {
-  const effect = document.createElement("div");
-  effect.className = "hellfire-heal-effect";
-  effect.style.left = x + "px";
-  effect.style.top = y + "px";
-  game.appendChild(effect);
-  
-  setTimeout(() => {
-    if (effect.parentNode) {
-      effect.parentNode.removeChild(effect);
-    }
-  }, 1500);
 }
 
 function applyPermanentSlow(zombie, slowAmount, maxSlow) {
@@ -1203,11 +1083,6 @@ function createBounceBullet(startX, startY, targetZombie, damage, plant) {
 }
 
 function selectPlant(t) {
-  if (t === "cay19" && !cay19Unlocked) {
-    alert("Cần tiêu diệt 1 Sứ giả khe nứt (thayma7) để mở khóa cây này!");
-    return;
-  }
-  
   selectedPlant = t;
   document.getElementById("selected").textContent = "→ " + t;
 }
@@ -1246,14 +1121,7 @@ game.onclick = (e) => {
   if (exist) return;
   
   const config = PLANT_CONFIG.plants[selectedPlant];
-  if (!config) return;
-  
-  let actualCost = config.cost;
-  if (selectedPlant === 'cay19') {
-    actualCost = cay19CurrentCost;
-  }
-  
-  if (sun < actualCost) return;
+  if (!config || sun < config.cost) return;
   
   if (selectedPlant === 'azami' || selectedPlant === 'cay10') {
     const plantsInRow = plants.filter(p => p.r === r && p.type === selectedPlant);
@@ -1263,15 +1131,8 @@ game.onclick = (e) => {
     }
   }
   
-  sun -= actualCost;
+  sun -= config.cost;
   sunSpan.textContent = sun;
-  
-  if (selectedPlant === 'cay19') {
-    cay19PurchaseCount++;
-    cay19CurrentCost += 3000;
-    updateCay19ShopItem();
-  }
-  
   addPlant(r, c, selectedPlant);
 }
 
@@ -1322,7 +1183,7 @@ function addPlant(r, c, type) {
     c,
     type,
     hp: config.hp,
-    maxHp: config.maxHp || config.hp,
+    maxHp: config.hp,
     el,
     hpT,
     mana: 0,
@@ -1334,17 +1195,13 @@ function addPlant(r, c, type) {
     cooldown: false,
     reflectionCount: 0,
     lastSkillTime: Date.now(),
-    lastAttackTime: 0,
-    lastManaIncrease: Date.now(),
-    purchaseCost: (type === 'cay19' ? cay19CurrentCost - 3000 : config.cost)
+    lastAttackTime: 0
   };
 
   plants.push(p);
 
-  // Xử lý riêng cho từng loại cây
-  if (type === "sunflower" || type === "bigsun") {
-    setInterval(() => {
-      if (paused) return;
+  setInterval(() => {
+    if (p.type === "sunflower" || p.type === "bigsun") {
       if (p.mana < 100) {
         p.mana += 25;
         p.manaFill.style.width = Math.min(100, p.mana) + "%";
@@ -1354,8 +1211,8 @@ function addPlant(r, c, type) {
         p.mana = 0;
         p.manaFill.style.width = "0%";
       }
-    }, 1000);
-  }
+    }
+  }, 1000);
 
   if (type === "cherry") setTimeout(() => explode(p), 1500);
 }
@@ -2221,46 +2078,6 @@ function update() {
     
     const targetPlant = plants.find(p => p.r === z.r && Math.abs(p.c - z.x) < 0.5);
     
-    // Kiểm tra nếu có cây cay19 chặn đường
-    const blockingCay19 = plants.find(p => p.type === "cay19" && p.r === z.r && Math.abs(p.c - z.x) < 0.5);
-    if (blockingCay19 && z.type !== "thayma2" && !z.passThroughPlants) {
-      // Zombie không thể đi qua cây cay19
-      if (z.canAttack) {
-        const now = Date.now();
-        const attackInterval = z.attackInterval || ZOMBIE_CONFIG.attackInterval;
-        
-        if (now - z.lastAttackTime > attackInterval) {
-          const actualDamage = z.attackDamage * (1 - blockingCay19.config.action.damageReduction);
-          blockingCay19.hp -= actualDamage;
-          blockingCay19.hpT.textContent = Math.ceil(blockingCay19.hp);
-          
-          // Khi cay19 bị tấn công, hồi máu cho toàn bộ cây
-          plants.forEach(plant => {
-            if (plant !== blockingCay19) {
-              const oldHp = plant.hp;
-              plant.hp = Math.min(plant.maxHp, plant.hp + blockingCay19.config.action.healOnHit);
-              plant.hpT.textContent = Math.ceil(plant.hp);
-              if (plant.hp > oldHp) {
-                const pos = cellPos(plant.r, plant.c);
-                createHellfireHealEffect(pos.x, pos.y);
-              }
-            }
-          });
-          
-          blockingCay19.el.classList.add("hit");
-          setTimeout(() => {
-            if (blockingCay19.el) blockingCay19.el.classList.remove("hit");
-          }, 500);
-          
-          z.lastAttackTime = now;
-        }
-      }
-      z.x = Math.max(z.x, blockingCay19.c + 0.5);
-      const pos = cellPos(z.r, z.x);
-      z.el.style.left = pos.x + "px";
-      return;
-    }
-    
     if (z.type === "thayma2" && z.passThroughPlants) {
       z.x -= z.speed * z.slow;
       const pos = cellPos(z.r, z.x);
@@ -2337,31 +2154,6 @@ function update() {
                 if (targetPlant.el) targetPlant.el.classList.remove("hit");
               }, 500);
               document.getElementById("throwSound").play();
-            }
-            
-            if (targetPlant.type === "cay19") {
-              // Cay19 nhận giảm 80% sát thương
-              actualDamage *= (1 - targetPlant.config.action.damageReduction);
-              
-              // Khi cay19 bị tấn công, hồi máu cho toàn bộ cây
-              plants.forEach(plant => {
-                if (plant !== targetPlant) {
-                  const oldHp = plant.hp;
-                  plant.hp = Math.min(plant.maxHp, plant.hp + targetPlant.config.action.healOnHit);
-                  plant.hpT.textContent = Math.ceil(plant.hp);
-                  if (plant.hp > oldHp) {
-                    const pos = cellPos(plant.r, plant.c);
-                    createHellfireHealEffect(pos.x, pos.y);
-                  }
-                }
-              });
-              
-              targetPlant.el.classList.add("hit");
-              setTimeout(() => {
-                if (targetPlant.el) targetPlant.el.classList.remove("hit");
-              }, 500);
-              
-              document.getElementById("hellfireSound").play();
             }
             
             targetPlant.hp -= actualDamage;
@@ -2448,28 +2240,6 @@ function update() {
   plants.forEach(p => {
     const now = Date.now();
     const config = p.config;
-    
-    // Xử lý cây cay19
-    if (p.type === "cay19") {
-      // Tăng mana mỗi giây
-      if (now - p.lastManaIncrease > 1000) {
-        p.mana = Math.min(100, p.mana + config.action.manaPerSecond);
-        p.manaFill.style.width = p.mana + "%";
-        p.lastManaIncrease = now;
-      }
-      
-      // Nếu đủ mana, cho mặt trời
-      if (p.mana >= 100) {
-        sun += config.action.sunPerMana;
-        sunSpan.textContent = sun;
-        p.mana = 0;
-        p.manaFill.style.width = "0%";
-        p.el.style.boxShadow = "0 0 30px gold";
-        setTimeout(() => {
-          if (p.el) p.el.style.boxShadow = "";
-        }, 1000);
-      }
-    }
     
     if (p.type === "cay13") {
       if (now - p.lastHealTime > 1000) {
@@ -2676,30 +2446,8 @@ function update() {
     }
   });
 
-  // Xử lý đạn bay qua cây cay19 để tăng sát thương
-  const cay19Plants = plants.filter(p => p.type === "cay19");
   bullets.forEach((b, index) => {
     if (b.isProcessed) return;
-    
-    // Kiểm tra nếu đạn bay qua cây cay19
-    cay19Plants.forEach(cay19 => {
-      if (b.r === cay19.r && Math.abs(b.x - cay19.c) < 0.5 && b.direction === 1) {
-        if (!b.hellfireEnhanced) {
-          b.hellfireEnhanced = true;
-          b.power += cay19.config.action.bulletEnhanceDamage;
-          b.el.classList.add("hellfire-enhanced");
-          
-          // Phát âm thanh lửa địa ngục
-          document.getElementById("hellfireSound").play();
-          
-          // Hiệu ứng đặc biệt
-          cay19.el.style.boxShadow = "0 0 40px #FF0000";
-          setTimeout(() => {
-            if (cay19.el) cay19.el.style.boxShadow = "";
-          }, 500);
-        }
-      }
-    });
     
     if (b.direction === 1 && !b.source) {
       plants.forEach(p => {
@@ -2926,16 +2674,6 @@ function update() {
       document.getElementById("dieSound").play();
       const config = ZOMBIE_CONFIG.zombies[z.type];
       
-      // Kiểm tra nếu là thayma7 (Sứ giả khe nứt)
-      if (z.type === "thayma7") {
-        thayma7Kills++;
-        if (thayma7Kills >= 1 && !cay19Unlocked) {
-          cay19Unlocked = true;
-          updateCay19ShopItem();
-          alert("✨ ĐÃ MỞ KHÓA: Óc chó địa ngục sinh đôi! ✨\nĐã tiêu diệt Sứ giả khe nứt!");
-        }
-      }
-      
       if (z.type === "thayma4" && z.explosionOnDeath) {
         document.getElementById("boomSound").play();
         zombies.forEach(otherZombie => {
@@ -2945,11 +2683,9 @@ function update() {
         });
       }
       
-      if (z.type === "thayma6" && z.winOnKill && z.hp <= 0) {
-        setTimeout(() => {
-          alert("🎉 BẠN ĐÃ CHIẾN THẮNG! ĐÃ TIÊU DIỆT THÂY MA TỐI THƯỢNG! 🎉\nTổng điểm: " + score);
-          location.reload();
-        }, 100);
+      if (z.type === "thayma6" && z.winOnKill) {
+        alert("🎉 BẠN ĐÃ CHIẾN THẮNG! ĐÃ TIÊU DIỆT THÂY MA TỐI THƯỢNG! 🎉\nTổng điểm: " + score);
+        location.reload();
       }
       
       if (z.type === "thayma8") {
@@ -2964,12 +2700,14 @@ function update() {
       score += config.scoreReward;
       sunSpan.textContent = sun;
       scoreSpan.textContent = score;
-      
       if (z.type === "red") {
         redKills++;
         if (redKills >= 20) spawnBoss();
       }
-      
+      if (z.type === "purple") {
+        alert("🏆 Bạn đã chiến thắng! Tổng điểm: " + score);
+        location.reload();
+      }
       z.el.remove();
       return false;
     }
@@ -3052,9 +2790,6 @@ setTimeout(spawnThayMa7, 1000);
 setTimeout(spawnThayMa8, 1000);
 setTimeout(spawnZombie, 2000);
 setTimeout(spawnSmartZombie, 5000);
-
-// Cập nhật trạng thái cây 19 ban đầu
-updateCay19ShopItem();
 </script>
 </body>
 </html>
