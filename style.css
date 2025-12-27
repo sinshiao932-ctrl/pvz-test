@@ -1,0 +1,612 @@
+/* style.css */
+body { 
+  background:#9be29b; 
+  font-family:sans-serif; 
+  user-select:none; 
+}
+
+h1{text-align:center;}
+
+/* Thêm overlay màn hình bắt đầu */
+#startScreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  color: white;
+  text-align: center;
+}
+
+#startContent {
+  background: #2a6e2a;
+  padding: 40px;
+  border-radius: 15px;
+  border: 5px solid gold;
+  max-width: 600px;
+}
+
+#startBtn {
+  font-size: 24px;
+  padding: 15px 40px;
+  background: gold;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: bold;
+  margin-top: 20px;
+  transition: all 0.3s;
+}
+
+#startBtn:hover {
+  background: orange;
+  transform: scale(1.05);
+}
+
+/* Màn hình chọn cây */
+#plantSelectScreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9998;
+  color: white;
+  text-align: center;
+}
+
+#plantSelectContent {
+  background: #2a6e2a;
+  padding: 30px;
+  border-radius: 15px;
+  border: 5px solid gold;
+  max-width: 1200px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+#plantSelectionGrid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 15px;
+  margin: 20px 0;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
+.plant-select-item {
+  background: #4a9a4a;
+  border: 3px solid transparent;
+  border-radius: 10px;
+  padding: 10px;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 150px;
+}
+
+.plant-select-item:hover {
+  background: #5aaa5a;
+  transform: translateY(-5px);
+}
+
+.plant-select-item.selected {
+  border-color: gold;
+  background: #3a8a3a;
+  box-shadow: 0 0 15px gold;
+}
+
+.plant-select-item.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(100%);
+}
+
+.plant-select-item img {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  margin-bottom: 10px;
+}
+
+.plant-select-info {
+  font-size: 12px;
+  margin-top: 5px;
+  text-align: center;
+}
+
+.plant-select-info .plant-name {
+  font-weight: bold;
+  margin-bottom: 3px;
+  color: #fff;
+}
+
+.plant-select-info .plant-cost {
+  color: gold;
+  font-size: 11px;
+}
+
+#confirmPlantsBtn {
+  font-size: 20px;
+  padding: 15px 40px;
+  background: gold;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: bold;
+  margin-top: 20px;
+  transition: all 0.3s;
+}
+
+#confirmPlantsBtn:hover:not(:disabled) {
+  background: orange;
+  transform: scale(1.05);
+}
+
+#confirmPlantsBtn:disabled {
+  background: gray;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+#selectedCount {
+  font-size: 18px;
+  margin: 15px 0;
+  font-weight: bold;
+}
+
+/* Màn hình tạm dừng */
+#pauseScreen {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 20px 40px;
+  border-radius: 10px;
+  font-size: 32px;
+  font-weight: bold;
+  z-index: 9998;
+  display: none;
+}
+
+#game{
+  position:relative;width:980px;height:720px;margin:10px auto;
+  background:repeating-linear-gradient(90deg,#7fcf7f 0,#7fcf7f 68px,#72c272 70px),
+             repeating-linear-gradient(0deg,#7fcf7f 0,#7fcf7f 88px,#72c272 90px);
+  border:4px solid #2a6e2a;
+}
+
+.plant,.zombie,.bullet{position:absolute;transform:translate(-50%,-50%);text-align:center;font-weight:bold;font-size:12px;}
+.zombie{width:60px;height:80px;background:gray;border:2px solid black;color:white;}
+.zombie.red{background:red;}
+.zombie.big{width:80px;height:100px;background:darkgray;}
+.zombie.purple{width:180px;height:180px;background:purple;font-size:18px;border:3px solid black;}
+.zombie.smart{background:url('thayma.png') center/cover no-repeat;}
+.zombie.thayma2{background:url('thayma2.png') center/cover no-repeat;}
+.zombie.thayma3{background:url('thayma3.png') center/cover no-repeat;}
+.zombie.thayma4{background:url('thayma4.png') center/cover no-repeat;}
+.zombie.thayma5{background:url('thayma5.png') center/cover no-repeat;}
+.zombie.thayma6{background:url('thayma6.png') center/cover no-repeat; width:100px;height:120px;z-index:1000;}
+
+/* THÊM: CSS cho thây ma 7 - Sứ giả khe nứt */
+.zombie.thayma7 {
+  background: url('thayma7.png') center/cover no-repeat;
+  width: 70px;
+  height: 90px;
+  border: 3px solid #ff0000;
+}
+
+/* THÊM: CSS cho thây ma 8 - Baron Nashor */
+.zombie.thayma8 {
+  background: url('thayma8.png') center/cover no-repeat;
+  width: 100px;
+  height: 120px;
+  border: 3px solid #8B0000;
+  z-index: 1001;
+}
+
+.bullet{width:10px;height:10px;background:yellow;border-radius:50%;}
+.bullet.green{background:lime;}
+.bullet.blue{background:cyan;}
+.bullet.az{background:orange;}
+.bullet.purple-bullet{background:purple;width:15px;height:15px;}
+
+/* Đạn to màu đỏ của boss */
+.bullet.red-boss-bullet{
+  background:red;
+  width:40px;
+  height:40px;
+  border-radius:0%;
+  border:3px solid darkred;
+  z-index: 900;
+}
+
+/* Đạn được tăng cường bởi cay12 */
+.bullet.enhanced{
+  border:2px solid gold;
+  transition: all 0.1s;
+}
+
+/* Đạn của đại bác địa ngục */
+.bullet.hell-cannon{
+  background:purple;
+  width:20px;
+  height:20px;
+  border:2px solid black;
+}
+
+/* Đạn của tỏi biến dị */
+.bullet.garlic-bullet{
+  background: #ff66b2;
+  width: 12px;
+  height: 12px;
+  border: 1px solid #cc0066;
+  box-shadow: 0 0 5px #ff3399;
+}
+
+/* Đạn của cay18 - đạn ném */
+.bullet.cay18-bullet {
+  background: url('dancay18.png') center/cover no-repeat;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  border: 2px solid #8B0000;
+  box-shadow: 0 0 10px #FF4500;
+  z-index: 950;
+}
+
+/* Đạn được tăng cường bởi cay19 */
+.bullet.hellfire-enhanced {
+  background: #FF4500 !important;
+  box-shadow: 0 0 15px #FF0000, 0 0 25px #FF8C00 !important;
+  border: 2px solid #FFD700 !important;
+  animation: hellfirePulse 0.5s infinite alternate;
+  transform: scale(1.2);
+  z-index: 1000;
+}
+
+@keyframes hellfirePulse {
+  0% { box-shadow: 0 0 15px #FF0000, 0 0 25px #FF8C00; }
+  100% { box-shadow: 0 0 20px #FF0000, 0 0 30px #FF4500; }
+}
+
+#panel{text-align:center;margin:10px;}
+button{margin:2px 4px;padding:5px 10px;cursor:pointer;}
+
+#scoreBoard{
+  position:absolute;
+  bottom:5px;
+  right:15px;
+  background:rgba(255,255,255,0.6);
+  padding:5px 10px;
+  border-radius:8px;
+  font-weight:bold;
+}
+
+/* Cập nhật shop */
+.shop-item {
+  width: 30px;
+  height: 35px;
+  margin: 5px;
+  display: inline-block;
+  text-align: center;
+  cursor: pointer;
+  position: relative;
+}
+
+.shop-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Đảm bảo ảnh không bị méo */
+  border-radius: 5px;
+}
+
+.shop-item[title]:hover::after {
+  content: attr(title);
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 3px 6px;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  font-size: 12px;
+  border-radius: 5px;
+  white-space: nowrap;
+}
+
+.shop-item.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(100%);
+}
+
+#game {
+  position: relative;
+  width: 1400px; /* Chiều rộng game */
+  height: 535px; /* Chiều cao game */
+  margin: 10px auto;
+  background: none;
+  border: 4px solid #2a6e2a;
+}
+
+.cell {
+  width: 70px; /* Kích thước ô */
+  height: 90px; /* Kích thước ô */
+  border: 1px solid #3a923a; /* Đường viền cho các ô */
+  display: inline-block;
+  box-sizing: border-box;
+  position: absolute;
+}
+
+/* Cây - CẤU HÌNH CHUNG */
+.plant {
+  width: var(--plant-width, 60px);
+  height: var(--plant-height, 60px);
+  margin: 0;
+  position: absolute;
+}
+
+/* Thanh mana */
+.mana-bar {
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: var(--plant-width, 60px);
+  height: 5px;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.mana-fill {
+  height: 100%;
+  width: 0%;  /* Mở rộng thanh mana */
+  background: blue;
+}
+
+/* Số máu */
+.hp-text {
+  position: absolute;
+  top: -15px;  /* Giảm khoảng cách để số máu gần đầu cây hơn */
+  left: 50%;   /* Căn giữa theo chiều ngang */
+  transform: translateX(-50%); /* Căn giữa hoàn hảo */
+  font-size: 14px;
+  color: #ff0000;  /* Màu đỏ cho số máu */
+}
+
+/* Thêm vào phần CSS cho bullet */
+.bullet.red { background: red; }
+
+/* Hiệu ứng cho cây cay14 khi kích hoạt */
+.plant.cay14 {
+  transition: box-shadow 0.3s ease;
+  border: 2px solid gold;
+}
+
+/* Hiệu ứng cho cây cay16 khi bị tấn công */
+.plant.cay16.hit {
+  animation: mineFlash 0.5s;
+  box-shadow: 0 0 20px red;
+}
+
+@keyframes mineFlash {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.5); }
+}
+
+/* Hiệu ứng cho cây cay17 khi bị tấn công */
+.plant.cay17.garlic-hit {
+  animation: garlicFlash 0.5s;
+  box-shadow: 0 0 15px purple;
+}
+
+@keyframes garlicFlash {
+  0%, 100% { 
+    filter: brightness(1) hue-rotate(0deg); 
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% { 
+    filter: brightness(1.3) hue-rotate(180deg); 
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+}
+
+/* Hiệu ứng cho cây cay18 khi bị tấn công */
+.plant.cay18.hit {
+  animation: cay18Flash 0.5s;
+  box-shadow: 0 0 20px #FF4500;
+}
+
+@keyframes cay18Flash {
+  0%, 100% { 
+    filter: brightness(1) hue-rotate(0deg); 
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% { 
+    filter: brightness(1.5) hue-rotate(90deg); 
+    transform: translate(-50%, -50%) scale(1.2);
+  }
+}
+
+/* Hiệu ứng cho cây cay19 */
+.plant.cay19 {
+  border: 3px solid #8B0000;
+  box-shadow: 0 0 20px #FF4500;
+  animation: hellfireGlow 2s infinite alternate;
+}
+
+@keyframes hellfireGlow {
+  0% { box-shadow: 0 0 20px #FF4500, 0 0 30px #8B0000; }
+  100% { box-shadow: 0 0 25px #FF0000, 0 0 35px #FF8C00; }
+}
+
+.plant.cay19.hit {
+  animation: cay19Hit 0.5s;
+  box-shadow: 0 0 30px #00FF00;
+}
+
+@keyframes cay19Hit {
+  0%, 100% { 
+    filter: brightness(1); 
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% { 
+    filter: brightness(1.5); 
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+}
+
+/* Hiệu ứng cho zombie khi bị tỏi tấn công */
+.zombie.garlic-effect {
+  border: 2px solid purple !important;
+  box-shadow: 0 0 10px purple;
+  animation: garlicZombie 5s linear;
+}
+
+@keyframes garlicZombie {
+  0% { border-color: purple; }
+  50% { border-color: #ff66ff; }
+  100% { border-color: purple; }
+}
+
+/* Hiệu ứng cho zombie khi bị cay18 tấn công */
+.zombie.cay18-slow {
+  border: 2px solid #FF4500 !important;
+  box-shadow: 0 0 15px #FF8C00;
+  filter: brightness(0.8) sepia(1) hue-rotate(-30deg);
+}
+
+/* Hiệu ứng cho zombie khi bị tấn công bởi cay14 */
+.zombie.hit-by-cay14 {
+  animation: hitFlash 0.5s;
+}
+
+@keyframes hitFlash {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.5); }
+}
+
+/* Hiệu ứng hồi máu */
+.heal-effect {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  background: radial-gradient(circle, rgba(0,255,0,0.5) 0%, rgba(0,255,0,0) 70%);
+  border-radius: 50%;
+  animation: healPulse 1s ease-out;
+  pointer-events: none;
+  z-index: 500;
+}
+
+@keyframes healPulse {
+  0% { transform: scale(0.5); opacity: 1; }
+  100% { transform: scale(2); opacity: 0; }
+}
+
+/* Hiệu ứng mìn nổ */
+.mine-explosion-effect {
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(255,0,0,0.7) 0%, rgba(255,0,0,0) 70%);
+  border-radius: 50%;
+  animation: explosionPulse 0.8s ease-out;
+  pointer-events: none;
+  z-index: 800;
+}
+
+@keyframes explosionPulse {
+  0% { transform: scale(0.1); opacity: 1; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
+/* Hiệu ứng đạn tỏi */
+.garlic-bullet-trail {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: rgba(255, 102, 178, 0.5);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 400;
+  animation: garlicTrail 0.3s forwards;
+}
+
+@keyframes garlicTrail {
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(0); opacity: 0; }
+}
+
+/* Hiệu ứng đạn ném cay18 */
+.cay18-throw-effect {
+  position: absolute;
+  width: 15px;
+  height: 15px;
+  background: radial-gradient(circle, rgba(255,69,0,0.7) 0%, rgba(255,69,0,0) 70%);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 400;
+  animation: cay18Throw 0.5s forwards;
+}
+
+@keyframes cay18Throw {
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(2); opacity: 0; }
+}
+
+/* Hiệu ứng đạn nảy cay18 */
+.cay18-bounce-effect {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background: radial-gradient(circle, rgba(255,140,0,0.8) 0%, rgba(255,140,0,0) 70%);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 400;
+  animation: cay18Bounce 0.3s forwards;
+}
+
+@keyframes cay18Bounce {
+  0% { transform: scale(0.5); opacity: 1; }
+  50% { transform: scale(1.2); opacity: 0.8; }
+  100% { transform: scale(1); opacity: 0; }
+}
+
+/* Hiệu ứng buff của Baron */
+.zombie.baron-buffed {
+  box-shadow: 0 0 15px #00FF00 !important;
+  filter: brightness(1.3) !important;
+}
+
+/* Hiệu ứng hồi máu cho cay19 */
+.hellfire-heal-effect {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  background: radial-gradient(circle, rgba(255,0,0,0.7) 0%, rgba(255,69,0,0.5) 30%, rgba(255,140,0,0) 70%);
+  border-radius: 50%;
+  animation: hellfireHeal 1.5s ease-out;
+  pointer-events: none;
+  z-index: 500;
+}
+
+@keyframes hellfireHeal {
+  0% { transform: scale(0.1); opacity: 1; }
+  100% { transform: scale(3); opacity: 0; }
+}
