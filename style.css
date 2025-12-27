@@ -186,12 +186,162 @@ h1{text-align:center;}
   display: none;
 }
 
-#game{
-  position:relative;width:980px;height:720px;margin:10px auto;
-  background:repeating-linear-gradient(90deg,#7fcf7f 0,#7fcf7f 68px,#72c272 70px),
-             repeating-linear-gradient(0deg,#7fcf7f 0,#7fcf7f 88px,#72c272 90px);
-  border:4px solid #2a6e2a;
+/* =============== SÂN CHƠI =============== */
+#game {
+  position: relative;
+  width: 1400px; /* 20 cột * 70px */
+  height: 535px; /* 5 hàng * 90px + đường viền */
+  margin: 10px auto;
+  background: 
+    /* Nền chính với các ô xen kẽ */
+    linear-gradient(90deg, 
+      #7fcf7f 0px, #7fcf7f 70px, 
+      #72c272 70px, #72c272 140px
+    ) repeat-x,
+    linear-gradient(0deg, 
+      #7fcf7f 0px, #7fcf7f 90px, 
+      #5ab35a 90px, #5ab35a 180px
+    ) repeat-y,
+    /* Màu nền cơ bản */
+    #7fcf7f;
+  background-size: 140px 180px;
+  border: 4px solid #2a6e2a;
+  overflow: hidden;
 }
+
+/* Đường kẻ phân biệt hàng và cột */
+#game::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    /* Đường kẻ cột (dọc) */
+    linear-gradient(90deg, 
+      transparent 69px, 
+      rgba(255, 255, 255, 0.3) 70px,
+      transparent 71px
+    ),
+    /* Đường kẻ hàng (ngang) */
+    linear-gradient(0deg, 
+      transparent 89px, 
+      rgba(255, 255, 255, 0.3) 90px,
+      transparent 91px
+    );
+  background-size: 70px 90px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Đường viền dày hơn cho hàng đầu và cột đầu */
+#game::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    /* Đường kẻ cột đầu (dọc) đậm hơn */
+    linear-gradient(90deg, 
+      rgba(0, 0, 0, 0.2) 0px, 
+      rgba(0, 0, 0, 0.2) 2px,
+      transparent 3px
+    ),
+    /* Đường kẻ hàng đầu (ngang) đậm hơn */
+    linear-gradient(0deg, 
+      rgba(0, 0, 0, 0.2) 0px, 
+      rgba(0, 0, 0, 0.2) 2px,
+      transparent 3px
+    );
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Hiệu ứng hover cho các ô */
+.cell-hover {
+  position: absolute;
+  width: 70px;
+  height: 90px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 2px dashed rgba(255, 255, 255, 0.5);
+  box-sizing: border-box;
+  display: none;
+  pointer-events: none;
+  z-index: 3;
+}
+
+/* Các ô lưới */
+.cell {
+  position: absolute;
+  width: 70px;
+  height: 90px;
+  box-sizing: border-box;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: background-color 0.3s;
+}
+
+/* Màu xen kẽ cho các ô */
+.cell:nth-child(odd) {
+  background-color: rgba(122, 199, 122, 0.3);
+}
+
+.cell:nth-child(even) {
+  background-color: rgba(106, 186, 106, 0.3);
+}
+
+/* Hiệu ứng khi có cây */
+.cell.has-plant {
+  background-color: rgba(255, 255, 255, 0.15);
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Hiệu ứng khi có zombie */
+.cell.has-zombie {
+  background-color: rgba(255, 0, 0, 0.1);
+  box-shadow: inset 0 0 10px rgba(255, 0, 0, 0.3);
+}
+
+/* Hiệu ứng ô được chọn để trồng cây */
+.cell.plantable {
+  background-color: rgba(255, 255, 255, 0.3) !important;
+  border: 2px dashed gold;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+/* Hiệu ứng ô được chọn trong shop */
+.cell.selected-for-plant {
+  background-color: rgba(255, 215, 0, 0.3);
+  border: 2px solid gold;
+  box-shadow: 0 0 15px gold;
+}
+
+/* Chỉ số hàng và cột */
+.row-label, .col-label {
+  position: absolute;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 12px;
+  font-weight: bold;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.row-label {
+  left: -25px;
+  text-align: right;
+  width: 20px;
+}
+
+.col-label {
+  top: -20px;
+  text-align: center;
+  width: 70px;
+}
+
+/* Phần còn lại của CSS giữ nguyên */
 
 .plant,.zombie,.bullet{position:absolute;transform:translate(-50%,-50%);text-align:center;font-weight:bold;font-size:12px;}
 .zombie{width:60px;height:80px;background:gray;border:2px solid black;color:white;}
@@ -287,7 +437,14 @@ h1{text-align:center;}
   100% { box-shadow: 0 0 20px #FF0000, 0 0 30px #FF4500; }
 }
 
-#panel{text-align:center;margin:10px;}
+#panel{
+  text-align:center;
+  margin:10px;
+  padding: 10px;
+  background: rgba(42, 110, 42, 0.9);
+  border-radius: 10px;
+  border: 2px solid #2a6e2a;
+}
 button{margin:2px 4px;padding:5px 10px;cursor:pointer;}
 
 #scoreBoard{
@@ -298,6 +455,7 @@ button{margin:2px 4px;padding:5px 10px;cursor:pointer;}
   padding:5px 10px;
   border-radius:8px;
   font-weight:bold;
+  z-index: 10;
 }
 
 /* Cập nhật shop */
@@ -309,6 +467,15 @@ button{margin:2px 4px;padding:5px 10px;cursor:pointer;}
   text-align: center;
   cursor: pointer;
   position: relative;
+  border: 1px solid #2a6e2a;
+  border-radius: 5px;
+  background: #5ab35a;
+  transition: all 0.2s;
+}
+
+.shop-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 10px rgba(0,0,0,0.2);
 }
 
 .shop-item img {
@@ -330,6 +497,7 @@ button{margin:2px 4px;padding:5px 10px;cursor:pointer;}
   font-size: 12px;
   border-radius: 5px;
   white-space: nowrap;
+  z-index: 1000;
 }
 
 .shop-item.disabled {
@@ -338,30 +506,13 @@ button{margin:2px 4px;padding:5px 10px;cursor:pointer;}
   filter: grayscale(100%);
 }
 
-#game {
-  position: relative;
-  width: 1400px; /* Chiều rộng game */
-  height: 535px; /* Chiều cao game */
-  margin: 10px auto;
-  background: none;
-  border: 4px solid #2a6e2a;
-}
-
-.cell {
-  width: 70px; /* Kích thước ô */
-  height: 90px; /* Kích thước ô */
-  border: 1px solid #3a923a; /* Đường viền cho các ô */
-  display: inline-block;
-  box-sizing: border-box;
-  position: absolute;
-}
-
 /* Cây - CẤU HÌNH CHUNG */
 .plant {
   width: var(--plant-width, 60px);
   height: var(--plant-height, 60px);
   margin: 0;
   position: absolute;
+  z-index: 100;
 }
 
 /* Thanh mana */
@@ -372,12 +523,15 @@ button{margin:2px 4px;padding:5px 10px;cursor:pointer;}
   width: var(--plant-width, 60px);
   height: 5px;
   background: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+  overflow: hidden;
 }
 
 .mana-fill {
   height: 100%;
   width: 0%;  /* Mở rộng thanh mana */
-  background: blue;
+  background: linear-gradient(90deg, #00aaff, #0088ff);
+  transition: width 0.3s;
 }
 
 /* Số máu */
@@ -388,6 +542,9 @@ button{margin:2px 4px;padding:5px 10px;cursor:pointer;}
   transform: translateX(-50%); /* Căn giữa hoàn hảo */
   font-size: 14px;
   color: #ff0000;  /* Màu đỏ cho số máu */
+  font-weight: bold;
+  text-shadow: 1px 1px 2px black;
+  z-index: 101;
 }
 
 /* Thêm vào phần CSS cho bullet */
@@ -609,4 +766,131 @@ button{margin:2px 4px;padding:5px 10px;cursor:pointer;}
 @keyframes hellfireHeal {
   0% { transform: scale(0.1); opacity: 1; }
   100% { transform: scale(3); opacity: 0; }
+}
+
+/* Hiệu ứng highlight khi di chuột qua ô */
+.cell-highlight {
+  position: absolute;
+  width: 70px;
+  height: 90px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  pointer-events: none;
+  z-index: 5;
+  display: none;
+}
+
+/* Lưới nền với màu xen kẽ */
+.game-grid {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: repeat(20, 70px); /* 20 cột */
+  grid-template-rows: repeat(5, 90px); /* 5 hàng */
+  z-index: 0;
+}
+
+.grid-cell {
+  border-right: 1px solid rgba(255, 255, 255, 0.3);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+  position: relative;
+}
+
+/* Màu xen kẽ cho các ô lưới */
+.grid-cell:nth-child(odd) {
+  background-color: rgba(122, 199, 122, 0.3);
+}
+
+.grid-cell:nth-child(even) {
+  background-color: rgba(106, 186, 106, 0.3);
+}
+
+/* Đường kẻ đậm hơn cho hàng đầu và cột đầu */
+.grid-cell:nth-child(-n+20) {
+  border-top: 2px solid rgba(0, 0, 0, 0.2);
+}
+
+.grid-cell:nth-child(20n+1) {
+  border-left: 2px solid rgba(0, 0, 0, 0.2);
+}
+
+/* Hiệu ứng cho ô được chọn để trồng cây */
+.grid-cell.plantable {
+  background-color: rgba(255, 255, 255, 0.3) !important;
+  border: 2px dashed gold !important;
+}
+
+/* Chỉ số hàng và cột */
+.grid-row-label {
+  position: absolute;
+  left: -25px;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: bold;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 90px;
+  width: 25px;
+}
+
+.grid-col-label {
+  position: absolute;
+  top: -25px;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: bold;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 25px;
+  width: 70px;
+}
+
+/* Hiệu ứng cho ô có thể trồng cây */
+.grid-cell.available {
+  background-color: rgba(255, 255, 255, 0.15) !important;
+  border: 1px solid rgba(255, 255, 255, 0.5) !important;
+}
+
+/* Hiệu ứng cho ô đã có cây */
+.grid-cell.occupied {
+  background-color: rgba(0, 255, 0, 0.1) !important;
+  border: 1px solid rgba(0, 255, 0, 0.3) !important;
+}
+
+/* Hiệu ứng cho ô có zombie */
+.grid-cell.has-zombie {
+  background-color: rgba(255, 0, 0, 0.1) !important;
+  border: 1px solid rgba(255, 0, 0, 0.3) !important;
+}
+
+/* Hiệu ứng hover cho ô */
+.grid-cell:hover {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+}
+/* style.css - PHẦN THÊM CHO THÂY MA MỚI */
+
+/* CSS cho thây ma 9 - Quỷ đỏ I */
+.zombie.thayma9 {
+  background: url('thayma9.png') center/cover no-repeat;
+  width: 70px;
+  height: 90px;
+  border: 3px solid #FF4500;
+  box-shadow: 0 0 10px #FF4500;
+}
+
+/* CSS cho thây ma 10 - Quỷ đỏ II */
+.zombie.thayma10 {
+  background: url('thayma10.png') center/cover no-repeat;
+  width: 80px;
+  height: 100px;
+  border: 3px solid #FF0000;
+  box-shadow: 0 0 15px #FF0000;
+  z-index: 1002;
 }
