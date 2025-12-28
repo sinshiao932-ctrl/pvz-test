@@ -28,6 +28,8 @@ let thayma5Spawned = false;
 let thayma6Spawned = false;
 let thayma7Spawned = false;
 let thayma8Spawned = false;
+let thayma9Spawned = false;
+let thayma10Spawned = false;
 let thayma8Count = 0;
 let thayma7Buffed = false;
 
@@ -46,6 +48,8 @@ const THAYMA6_SPAWN_TIME = 60;
 const THAYMA7_SPAWN_TIME = 600; // 10 phút
 const THAYMA8_FIRST_SPAWN_TIME = 180; // 3 phút
 const THAYMA8_SECOND_SPAWN_TIME = 600; // 10 phút
+const THAYMA9_SPAWN_TIME = 300; // 5 phút
+const THAYMA10_SPAWN_TIME = 600; // 10 phút
 
 // =============== HÀM XỬ LÝ GAME ===============
 
@@ -73,6 +77,8 @@ function startGame() {
   setTimeout(spawnThayMa6, 1000);
   setTimeout(spawnThayMa7, 1000);
   setTimeout(spawnThayMa8, 1000);
+  setTimeout(spawnThayMa9, 1000); // Thêm spawner cho thây ma 9
+  setTimeout(spawnThayMa10, 1000); // Thêm spawner cho thây ma 10
   
   console.log("🚀 Game đã bắt đầu với " + (selectedPlants.size - 1) + " loại cây đã chọn!");
 }
@@ -482,6 +488,8 @@ function explode(p) {
   zombies.forEach(z => {
     if (z.type === "thayma6" && z.config.immuneToExplosion) return;
     if (z.type === "thayma8" && z.config.immuneToExplosion) return;
+    if (z.type === "thayma9" && z.config.immuneToExplosion) return;
+    if (z.type === "thayma10" && z.config.immuneToExplosion) return;
     
     if (Math.abs(z.r - p.r) <= range && Math.abs(z.x - p.c) < range) {
       z.hp -= damage;
@@ -1051,6 +1059,132 @@ function spawnThayMa8() {
   }, 30000);
 }
 
+// =============== SPAWN THÂY MA 9 - QUỶ ĐỎ I ===============
+function spawnThayMa9() {
+  if (paused || !gameStarted || thayma9Spawned) {
+    setTimeout(spawnThayMa9, 1000);
+    return;
+  }
+  
+  const elapsed = getActualElapsedTime();
+  if (elapsed < THAYMA9_SPAWN_TIME) {
+    setTimeout(spawnThayMa9, 1000);
+    return;
+  }
+  
+  const r = Math.floor(Math.random() * 5);
+  const z = document.createElement("div");
+  z.className = "zombie thayma9";
+  const pos = cellPos(r, cols);
+  z.style.left = pos.x + "px";
+  z.style.top = pos.y + "px";
+
+  const config = ZOMBIE_CONFIG.zombies.thayma9;
+  const hp = config.baseHp;
+  
+  const hpT = document.createElement("div");
+  hpT.style.position = "absolute";
+  hpT.style.top = "-20px";
+  hpT.style.fontSize = "12px";
+  hpT.style.color = "#FF4500";
+  hpT.style.fontWeight = "bold";
+  hpT.textContent = hp;
+  z.appendChild(hpT);
+  game.appendChild(z);
+
+  const zombie = {
+    r, 
+    x: cols, 
+    hp, 
+    type: "thayma9", 
+    speed: config.speed,
+    el: z, 
+    hpT, 
+    attack: null, 
+    slow: 1,
+    lastAttackTime: 0,
+    lastShootTime: 0,
+    attackDamage: config.attackDamage,
+    canAttack: config.canAttack,
+    canShoot: config.canShoot,
+    shootInterval: config.shootInterval,
+    shootDamage: config.shootDamage,
+    config: config
+  };
+
+  zombies.push(zombie);
+  thayma9Spawned = true;
+  
+  setTimeout(() => {
+    thayma9Spawned = false;
+    setTimeout(spawnThayMa9, 15000); // Xuất hiện lại sau 15 giây
+  }, 30000);
+}
+
+// =============== SPAWN THÂY MA 10 - QUỶ ĐỎ II ===============
+function spawnThayMa10() {
+  if (paused || !gameStarted || thayma10Spawned) {
+    setTimeout(spawnThayMa10, 1000);
+    return;
+  }
+  
+  const elapsed = getActualElapsedTime();
+  if (elapsed < THAYMA10_SPAWN_TIME) {
+    setTimeout(spawnThayMa10, 1000);
+    return;
+  }
+  
+  const r = Math.floor(Math.random() * 5);
+  const z = document.createElement("div");
+  z.className = "zombie thayma10";
+  const pos = cellPos(r, cols);
+  z.style.left = pos.x + "px";
+  z.style.top = pos.y + "px";
+
+  const config = ZOMBIE_CONFIG.zombies.thayma10;
+  const hp = config.baseHp;
+  
+  const hpT = document.createElement("div");
+  hpT.style.position = "absolute";
+  hpT.style.top = "-25px";
+  hpT.style.fontSize = "14px";
+  hpT.style.color = "#FF0000";
+  hpT.style.fontWeight = "bold";
+  hpT.style.textShadow = "0 0 3px #000";
+  hpT.textContent = hp;
+  z.appendChild(hpT);
+  game.appendChild(z);
+
+  const zombie = {
+    r, 
+    x: cols, 
+    hp, 
+    type: "thayma10", 
+    speed: config.speed,
+    el: z, 
+    hpT, 
+    attack: null, 
+    slow: 1,
+    lastAttackTime: 0,
+    lastShootTime: 0,
+    attackDamage: config.attackDamage,
+    canAttack: config.canAttack,
+    canShoot: config.canShoot,
+    shootInterval: config.shootInterval,
+    shootDamage: config.shootDamage,
+    immuneToControl: config.immuneToControl,
+    config: config
+  };
+
+  zombies.push(zombie);
+  thayma10Spawned = true;
+  
+  setTimeout(() => {
+    thayma10Spawned = false;
+    setTimeout(spawnThayMa10, 20000); // Xuất hiện lại sau 20 giây
+  }, 40000);
+}
+
 function spawnThayma7ForBaron() {
   if (paused || !gameStarted) return;
   
@@ -1319,7 +1453,7 @@ function update() {
 
   if (elapsedTime - lastUpdateTime >= ZOMBIE_CONFIG.timeUpdates.interval) {
     zombies.forEach(z => {
-      if (z.type !== "thayma5" && z.type !== "thayma6" && z.type !== "thayma7" && z.type !== "thayma8") {
+      if (z.type !== "thayma5" && z.type !== "thayma6" && z.type !== "thayma7" && z.type !== "thayma8" && z.type !== "thayma9" && z.type !== "thayma10") {
         z.hp += ZOMBIE_CONFIG.timeUpdates.hpIncrease;
         z.speed += ZOMBIE_CONFIG.timeUpdates.speedIncrease;
         z.hpT.textContent = Math.ceil(z.hp);
@@ -1341,6 +1475,40 @@ function update() {
         z.hasStopped = true;
         z.speed = 0;
         z.el.style.boxShadow = "0 0 30px #8B0000";
+      }
+    }
+    
+    // Xử lý bắn đạn cho thây ma 9 và 10
+    if ((z.type === "thayma9" || z.type === "thayma10") && z.canShoot) {
+      const now = Date.now();
+      if (now - z.lastShootTime > z.shootInterval) {
+        // Kiểm tra xem có cây nào trong tầm bắn không
+        const targetPlant = plants.find(p => p.r === z.r && Math.abs(p.c - z.x) < 5);
+        if (targetPlant) {
+          // Tạo đạn bắn
+          const bullet = document.createElement("div");
+          bullet.className = z.type === "thayma9" ? "bullet thayma9-bullet" : "bullet thayma10-bullet";
+          const pos = cellPos(z.r, z.x);
+          bullet.style.left = pos.x + "px";
+          bullet.style.top = pos.y + "px";
+          game.appendChild(bullet);
+          
+          bullets.push({ 
+            r: z.r, 
+            x: z.x, 
+            el: bullet, 
+            power: z.shootDamage,
+            direction: -1,
+            speed: 0.25,
+            source: "zombie",
+            isProcessed: false
+          });
+          
+          z.lastShootTime = now;
+          if (document.getElementById("shootSound")) {
+            document.getElementById("shootSound").play();
+          }
+        }
       }
     }
     
@@ -1413,7 +1581,7 @@ function update() {
           }
         }
         
-        if (z.canAttack && z.type !== "thayma3" && z.type !== "thayma6" && z.type !== "thayma8") {
+        if (z.canAttack && z.type !== "thayma3" && z.type !== "thayma6" && z.type !== "thayma8" && z.type !== "thayma9" && z.type !== "thayma10") {
           const now = Date.now();
           const attackInterval = z.attackInterval || ZOMBIE_CONFIG.attackInterval;
           
@@ -1430,7 +1598,9 @@ function update() {
                 const explosionDamage = targetPlant.config.action.explosionDamage || 30;
                 zombies.forEach(zombie => {
                   if (!(zombie.type === "thayma6" && zombie.config.immuneToExplosion) && 
-                      !(zombie.type === "thayma8" && zombie.config.immuneToExplosion)) {
+                      !(zombie.type === "thayma8" && zombie.config.immuneToExplosion) &&
+                      !(zombie.type === "thayma9" && zombie.config.immuneToExplosion) &&
+                      !(zombie.type === "thayma10" && zombie.config.immuneToExplosion)) {
                     zombie.hp -= explosionDamage;
                     zombie.el.style.boxShadow = "0 0 10px orange";
                     setTimeout(() => {
@@ -1523,7 +1693,7 @@ function update() {
           }
         }
         
-        if (z.canAttack || (z.type === "thayma3" && z.stopped) || (z.type === "thayma6" && z.hasStopped) || (z.type === "thayma8" && z.hasStopped)) {
+        if (z.canAttack || (z.type === "thayma3" && z.stopped) || (z.type === "thayma6" && z.hasStopped) || (z.type === "thayma8" && z.hasStopped) || z.type === "thayma9" || z.type === "thayma10") {
           z.x = z.x;
         }
       }
@@ -2022,7 +2192,7 @@ function update() {
     if (b.direction === 1 && !b.isThrown && !b.isBounce) {
       let hitZombie = false;
       zombies.forEach(z => {
-        if (z.type === "thayma5" || z.type === "thayma6" || z.type === "thayma7" || z.type === "thayma8") {
+        if (z.type === "thayma5" || z.type === "thayma6" || z.type === "thayma7" || z.type === "thayma8" || z.type === "thayma9" || z.type === "thayma10") {
           let hitRange = (z.type === "purple" ? 1.2 : 0.3);
           if (z.r === b.r && Math.abs(z.x - b.x) < hitRange) {
             z.hp -= b.power;

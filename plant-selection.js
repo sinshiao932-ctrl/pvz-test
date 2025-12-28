@@ -22,7 +22,30 @@ function showPlantSelectionScreen() {
     const plantItem = document.createElement("div");
     plantItem.className = "plant-select-item";
     plantItem.dataset.type = type;
-    plantItem.onclick = () => togglePlantSelection(type);
+    plantItem.title = `Click đơn để chọn, Double click để xem chi tiết`;
+    
+    // Xử lý click
+    plantItem.onclick = (e) => {
+      const now = Date.now();
+      const lastClick = plantItem.dataset.lastClick || 0;
+      
+      // Nếu click trong vòng 300ms sau click trước đó => double click
+      if (now - lastClick < 300) {
+        // Double click: hiển thị chi tiết
+        e.preventDefault();
+        e.stopPropagation();
+        plantItem.classList.add("double-clicked");
+        setTimeout(() => {
+          plantItem.classList.remove("double-clicked");
+        }, 500);
+        showPlantDetail(type);
+      } else {
+        // Single click: chọn/bỏ chọn cây
+        togglePlantSelection(type);
+      }
+      
+      plantItem.dataset.lastClick = now;
+    };
     
     // Tạo nội dung cây
     plantItem.innerHTML = `
@@ -32,6 +55,7 @@ function showPlantSelectionScreen() {
         <div class="plant-cost">Giá: ${config.cost} ☀️</div>
         <div class="plant-hp">Máu: ${config.hp} ❤️</div>
       </div>
+      <div class="plant-detail-hint">Double click để xem chi tiết</div>
     `;
     
     document.getElementById("plantSelectionGrid").appendChild(plantItem);
@@ -47,6 +71,172 @@ function showPlantSelectionScreen() {
   
   // Thiết lập sự kiện cho nút xác nhận
   document.getElementById("confirmPlantsBtn").onclick = confirmPlantSelection;
+  
+  // Thiết lập sự kiện cho nút đóng modal
+  document.getElementById("closeDetailBtn").onclick = closePlantDetail;
+  
+  // Đóng modal khi click ra ngoài
+  document.getElementById("plantDetailModal").onclick = function(e) {
+    if (e.target === this) {
+      closePlantDetail();
+    }
+  };
+}
+
+// Hàm hiển thị chi tiết cây
+function showPlantDetail(plantType) {
+  const config = PLANT_CONFIG.plants[plantType];
+  if (!config) return;
+  
+  // Cập nhật thông tin modal
+  document.getElementById("detailPlantName").textContent = config.name;
+  
+  const detailImage = document.getElementById("detailPlantImage");
+  detailImage.innerHTML = '';
+  
+  const img = document.createElement("img");
+  img.src = config.image;
+  img.alt = config.name;
+  img.onerror = function() {
+    this.src = 'https://via.placeholder.com/140x140?text=Cây';
+    this.classList.remove('loading');
+  };
+  img.onload = function() {
+    this.classList.remove('loading');
+  };
+  img.classList.add('loading');
+  detailImage.appendChild(img);
+  
+  // Tạo thông tin chi tiết
+  let detailHTML = `
+    <div class="detail-item">
+      <span class="detail-label">Tên cây:</span>
+      <span class="detail-value">${config.name}</span>
+    </div>
+    <div class="detail-item">
+      <span class="detail-label">Giá mặt trời:</span>
+      <span class="detail-value">${config.cost} ☀️</span>
+    </div>
+    <div class="detail-item">
+      <span class="detail-label">Máu (HP):</span>
+      <span class="detail-value">${config.hp} ❤️</span>
+    </div>
+    <div class="detail-item">
+      <span class="detail-label">Kích thước:</span>
+      <span class="detail-value">${config.width}×${config.height}px</span>
+    </div>
+  `;
+  
+  // Thêm thông tin kỹ năng nếu có
+  if (config.action && config.action.type !== "none" && config.action.type !== "tool") {
+    detailHTML += `<div class="detail-item"><span class="detail-label">Loại kỹ năng:</span><span class="detail-value">${getActionTypeName(config.action.type)}</span></div>`;
+    
+    const skillDetails = getSkillDetails(config.action);
+    if (skillDetails) {
+      detailHTML += `<div class="detail-item"><span class="detail-label">Chi tiết kỹ năng:</span><span class="detail-value">${skillDetails}</span></div>`;
+    }
+  }
+  
+  // Thêm mô tả
+  detailHTML += `
+    <div class="detail-description">
+      <span class="detail-label">Mô tả chi tiết:</span>
+      <p>${config.description || "Cây phòng thủ cơ bản."}</p>
+    </div>
+  `;
+  
+  // Thêm ghi chú đặc biệt
+  if (config.limitPerRow) {
+    detailHTML += `<div class="detail-item"><span class="detail-label">Giới hạn:</span><span class="detail-value">Tối đa ${config.limitPerRow} cây/hàng</span></div>`;
+  }
+  
+  if (plantType === 'cay19') {
+    detailHTML += `<div class="detail-item"><span class="detail-label">Điều kiện mở khóa:</span><span class="detail-value">Tiêu diệt 1 Sứ giả khe nứt</span></div>`;
+  }
+  
+  document.getElementById("plantDetailInfo").innerHTML = detailHTML;
+  
+  // Hiển thị modal
+  document.getElementById("plantDetailModal").style.display = "flex";
+  
+  // Đảm bảo modal ở trên cùng
+  document.getElementById("plantDetailModal").style.zIndex = "10000";
+}
+
+// Hàm lấy tên loại kỹ năng
+function getActionTypeName(actionType) {
+  const typeNames = {
+    "sunProducer": "Sản xuất mặt trời",
+    "shooter": "Bắn đạn",
+    "exploder": "Tự nổ",
+    "reflector": "Phản đạn",
+    "enhancer": "Tăng cường",
+    "blocker": "Chặn đường",
+    "areaHealer": "Hỗ trợ vùng",
+    "hellCannon": "Đại bác địa ngục",
+    "mine": "Mìn",
+    "garlic": "Tỏi tấn công",
+    "thrower": "Ném đạn",
+    "hellfireWalnut": "Óc chó địa ngục"
+  };
+  
+  return typeNames[actionType] || "Đặc biệt";
+}
+
+// Hàm lấy chi tiết kỹ năng
+function getSkillDetails(action) {
+  if (!action) return "";
+  
+  switch(action.type) {
+    case "sunProducer":
+      return `Sản xuất ${action.amount} ☀️ mỗi ${(action.interval/1000).toFixed(1)} giây`;
+    case "shooter":
+      const bullet = action.bullet || {};
+      let desc = `${bullet.count || 1} đạn/${(action.interval/1000).toFixed(1)}s, ${bullet.power || 1} sát thương`;
+      if (bullet.freeze) desc += ", làm chậm";
+      if (bullet.knock) desc += ", đẩy lùi";
+      if (action.cost) desc += ` (tốn ${action.cost}☀️)`;
+      return desc;
+    case "exploder":
+      return `Nổ sau ${(action.delay/1000).toFixed(1)}s, ${action.damage} sát thương, phạm vi ${action.range} ô`;
+    case "blocker":
+      if (action.healPerSecond) {
+        return `Hồi ${action.healPerSecond} HP/giây`;
+      }
+      return "Chặn zombie hiệu quả";
+    case "areaHealer":
+      return `Giảm ${(action.damageReduction*100)}% sát thương, gây ${action.damage} sát thương mỗi ${(action.interval/1000).toFixed(1)}s`;
+    case "hellCannon":
+      return `${(action.bullet.power || 0)} sát thương, ${(action.interval/1000).toFixed(1)}s/lần`;
+    case "mine":
+      return `Hồi ${action.healPerSecond} HP/giây, nổ ${action.explosionDamage} sát thương`;
+    case "garlic":
+      const garlicBullet = action.bullet || {};
+      const defense = action.defenseEffect || {};
+      let garlicDesc = `Bắn tầm ${garlicBullet.range || 1} ô, ${garlicBullet.power || 0} sát thương`;
+      if (defense.slowAmount) {
+        garlicDesc += `, làm chậm ${(defense.slowAmount*100)}% khi bị đánh`;
+      }
+      return garlicDesc;
+    case "thrower":
+      const throwBullet = action.bullet || {};
+      return `${throwBullet.mainDamage || 0} sát thương chính + ${throwBullet.bounceCount || 0} đạn nảy`;
+    case "hellfireWalnut":
+      return `Giảm ${(action.damageReduction*100)}% sát thương, hồi ${action.healOnHit} HP khi bị đánh`;
+    default:
+      return "";
+  }
+}
+
+// Hàm đóng modal chi tiết
+function closePlantDetail() {
+  const modal = document.getElementById("plantDetailModal");
+  modal.classList.add("closing");
+  
+  setTimeout(() => {
+    modal.style.display = "none";
+    modal.classList.remove("closing");
+  }, 400);
 }
 
 // Hàm tự động chọn một số cây cơ bản
@@ -72,7 +262,9 @@ function togglePlantSelection(plantType) {
   if (selectedPlants.has(plantType)) {
     // Bỏ chọn
     selectedPlants.delete(plantType);
-    plantItem.classList.remove("selected");
+    if (plantItem) {
+      plantItem.classList.remove("selected");
+    }
   } else {
     // Kiểm tra số lượng đã chọn
     if (selectedPlants.size >= 15) {
@@ -82,7 +274,9 @@ function togglePlantSelection(plantType) {
     
     // Chọn cây
     selectedPlants.add(plantType);
-    plantItem.classList.add("selected");
+    if (plantItem) {
+      plantItem.classList.add("selected");
+    }
   }
   
   updateSelectedCount();
@@ -94,11 +288,24 @@ function updateSelectedCount() {
   const confirmBtn = document.getElementById("confirmPlantsBtn");
   
   const count = selectedPlants.size;
-  countElement.textContent = `Đã chọn: ${count}/15`;
-  countElement.style.color = count >= 1 ? "lime" : "red";
+  if (countElement) {
+    countElement.textContent = `Đã chọn: ${count}/15`;
+    countElement.style.color = count >= 1 ? "#00ff00" : "#ff4444";
+    countElement.style.fontWeight = "bold";
+    countElement.style.fontSize = "18px";
+  }
   
   // Bật/tắt nút xác nhận
-  confirmBtn.disabled = count < 1 || count > 15;
+  if (confirmBtn) {
+    confirmBtn.disabled = count < 1 || count > 15;
+    if (!confirmBtn.disabled) {
+      confirmBtn.style.background = "linear-gradient(145deg, #ffcc00, #ff9900)";
+      confirmBtn.style.boxShadow = "0 0 15px rgba(255, 204, 0, 0.5)";
+    } else {
+      confirmBtn.style.background = "#666";
+      confirmBtn.style.boxShadow = "none";
+    }
+  }
 }
 
 // Hàm xác nhận lựa chọn và bắt đầu game
@@ -116,8 +323,9 @@ function confirmPlantSelection() {
   // Lưu lựa chọn
   savePlantSelection();
   
-  // Ẩn màn hình chọn cây
+  // Ẩn màn hình chọn cây và modal nếu đang mở
   document.getElementById("plantSelectScreen").style.display = "none";
+  closePlantDetail();
   
   // Cập nhật shop chỉ hiển thị cây đã chọn
   updateShopWithSelectedPlants();
@@ -171,10 +379,12 @@ function updateShopWithSelectedPlants() {
   
   // Cây cay19 cần xử lý đặc biệt
   const cay19Item = document.getElementById("cay19");
-  if (selectedPlants.has("cay19")) {
-    cay19Item.style.display = "inline-block";
-  } else {
-    cay19Item.style.display = "none";
+  if (cay19Item) {
+    if (selectedPlants.has("cay19")) {
+      cay19Item.style.display = "inline-block";
+    } else {
+      cay19Item.style.display = "none";
+    }
   }
 }
 
@@ -241,6 +451,13 @@ function addResetButtonToGame() {
     const resetButton = document.createElement("button");
     resetButton.id = "resetPlantsBtn";
     resetButton.textContent = "🔄 Chọn lại cây";
+    resetButton.style.background = "linear-gradient(145deg, #4a9a4a, #2a6e2a)";
+    resetButton.style.color = "white";
+    resetButton.style.border = "2px solid gold";
+    resetButton.style.borderRadius = "8px";
+    resetButton.style.padding = "8px 15px";
+    resetButton.style.cursor = "pointer";
+    resetButton.style.margin = "0 5px";
     resetButton.onclick = function() {
       if (confirm("Bạn có muốn chọn lại cây? Trận đấu hiện tại sẽ kết thúc.")) {
         localStorage.removeItem('pvz_plant_selection');
@@ -251,7 +468,9 @@ function addResetButtonToGame() {
     
     // Thêm vào panel sau nút tạm dừng
     const pauseBtn = document.getElementById("pauseBtn");
-    pauseBtn.parentNode.insertBefore(resetButton, pauseBtn.nextSibling);
+    if (pauseBtn && pauseBtn.parentNode) {
+      pauseBtn.parentNode.insertBefore(resetButton, pauseBtn.nextSibling);
+    }
   }
 }
 
@@ -276,3 +495,5 @@ window.addResetButtonToGame = addResetButtonToGame;
 window.loadPlantSelection = loadPlantSelection;
 window.updateCay19ShopItem = updateCay19ShopItem;
 window.initGameAfterSelection = initGameAfterSelection;
+window.showPlantDetail = showPlantDetail;
+window.closePlantDetail = closePlantDetail;

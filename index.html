@@ -34,6 +34,20 @@
   </div>
 </div>
 
+<!-- Modal chi tiết cây -->
+<div id="plantDetailModal" style="display: none;">
+  <div id="plantDetailContent">
+    <button id="closeDetailBtn">✕</button>
+    <h3 id="detailPlantName">Tên cây</h3>
+    <div id="detailPlantImage">
+      <img src="" alt="Cây">
+    </div>
+    <div id="plantDetailInfo">
+      <!-- Thông tin chi tiết sẽ được cập nhật bằng JavaScript -->
+    </div>
+  </div>
+</div>
+
 <!-- Màn hình tạm dừng -->
 <div id="pauseScreen" class="game-paused">
   ⏸️ GAME ĐANG TẠM DỪNG
@@ -145,6 +159,7 @@ const PLANT_CONFIG = {
       image: "cay1.png",
       width: 60,
       height: 60,
+      description: "Sản xuất mặt trời mỗi 5 giây.",
       action: {
         type: "sunProducer",
         interval: 5000,
@@ -158,6 +173,7 @@ const PLANT_CONFIG = {
       image: "cay2.png",
       width: 65,
       height: 65,
+      description: "Sản xuất mặt trời liên tục, mỗi giây 10 mặt trời.",
       action: {
         type: "sunProducer",
         interval: 1000,
@@ -171,6 +187,7 @@ const PLANT_CONFIG = {
       image: "cay3.png",
       width: 60,
       height: 60,
+      description: "Bắn đạn cơ bản, mỗi 1.5 giây 1 viên, 2 sát thương.",
       action: {
         type: "shooter",
         interval: 1500,
@@ -184,6 +201,7 @@ const PLANT_CONFIG = {
       image: "cay4.png",
       width: 60,
       height: 60,
+      description: "Bắn đạn băng, làm chậm zombie, 1 sát thương.",
       action: {
         type: "shooter",
         interval: 2000,
@@ -197,6 +215,7 @@ const PLANT_CONFIG = {
       image: "cay5.png",
       width: 65,
       height: 60,
+      description: "Bắn 2 viên đạn mỗi lần, 2 sát thương mỗi viên.",
       action: {
         type: "shooter",
         interval: 2000,
@@ -210,6 +229,7 @@ const PLANT_CONFIG = {
       image: "cay6.png",
       width: 70,
       height: 70,
+      description: "Có nhiều máu, dùng để chặn đường zombie.",
       action: { type: "none" }
     },
     cherry: {
@@ -219,6 +239,7 @@ const PLANT_CONFIG = {
       image: "cay7.png",
       width: 60,
       height: 60,
+      description: "Tự nổ sau 1.5 giây, gây 1000 sát thương phạm vi 1.5 ô.",
       action: {
         type: "exploder",
         delay: 1500,
@@ -233,6 +254,7 @@ const PLANT_CONFIG = {
       image: "cay8.png",
       width: 60,
       height: 60,
+      description: "Bắn đạn nhanh, đẩy lùi zombie, 10 sát thương, tốn 25 mặt trời mỗi lần bắn.",
       action: {
         type: "shooter",
         interval: 700,
@@ -248,6 +270,7 @@ const PLANT_CONFIG = {
       image: "cay10.png",
       width: 90,
       height: 70,
+      description: "Bắn đạn mạnh mỗi 4 giây, 30 sát thương.",
       action: {
         type: "shooter",
         interval: 4000,
@@ -262,6 +285,7 @@ const PLANT_CONFIG = {
       image: "cay9.png",
       width: 50,
       height: 50,
+      description: "Dùng để đào bỏ cây đã trồng.",
       action: { type: "tool" }
     },
     cay11: {
@@ -272,6 +296,7 @@ const PLANT_CONFIG = {
       image: "cay11.png",
       width: 60,
       height: 60,
+      description: "Phản lại đạn của zombie về phía chúng.",
       action: { type: "reflector" }
     },
     cay12: {
@@ -281,6 +306,7 @@ const PLANT_CONFIG = {
       image: "cay12.png",
       width: 60,
       height: 60,
+      description: "Tăng sát thương cho đạn của các cây xung quanh.",
       action: { type: "enhancer" }
     },
     cay13: {
@@ -291,6 +317,7 @@ const PLANT_CONFIG = {
       image: "cay13.png",
       width: 70,
       height: 70,
+      description: "Có nhiều máu, hồi 30 HP mỗi giây.",
       action: { 
         type: "blocker",
         healPerSecond: 30
@@ -298,12 +325,13 @@ const PLANT_CONFIG = {
     },
     cay14: {
       name: "Óc chó siêu khuyển",
-      cost: 25000,
+      cost: 0,
       hp: 8000,
       maxHp: 8000,
       image: "cay14.png",
       width: 80,
       height: 80,
+      description: "Giảm 50% sát thương, mỗi 3 giây gây 100 sát thương phạm vi 1 ô, nhân đôi hiệu quả hồi máu.",
       action: {
         type: "areaHealer",
         interval: 3000,
@@ -315,11 +343,12 @@ const PLANT_CONFIG = {
     },
     cay15: {
       name: "Đại bác địa ngục",
-      cost: 20000,
+      cost: 0,
       hp: 600,
       image: "cay15.png",
       width: 70,
       height: 70,
+      description: "Bắn đạn địa ngục mỗi 0.8 giây, 10 sát thương + đẩy lùi.",
       action: {
         type: "hellCannon",
         interval: 800,
@@ -334,6 +363,7 @@ const PLANT_CONFIG = {
       image: "cay16.png",
       width: 60,
       height: 60,
+      description: "3000 máu, hồi 1 HP/giây cho toàn bộ cây, khi bị tấn công gây 30 sát thương toàn sân.",
       action: {
         type: "mine",
         healPerSecond: 1,
@@ -348,6 +378,7 @@ const PLANT_CONFIG = {
       image: "cay17.png",
       width: 60,
       height: 60,
+      description: "Bắn đạn tầm 2 ô, 10 sát thương + đẩy lùi 0.5 ô. Khi bị tấn công: đẩy zombie sang hàng khác + làm chậm 80% trong 5s.",
       action: {
         type: "garlic",
         interval: 2000,
@@ -374,6 +405,7 @@ const PLANT_CONFIG = {
       image: "cay18.png",
       width: 65,
       height: 65,
+      description: "30 máu, ném đạn nảy, 30 sát thương + 3 đạn nảy 20 sát thương, giảm tốc 30% vĩnh viễn. Khi bị tấn công: đẩy zombie + giảm 99% tốc độ trong 10s.",
       action: {
         type: "thrower",
         interval: 3000,
@@ -402,6 +434,7 @@ const PLANT_CONFIG = {
       image: "cay19.png",
       width: 85,
       height: 85,
+      description: "Mở khóa khi tiêu diệt 1 Sứ giả khe nứt. 30000 máu, giảm 80% sát thương, hồi 100 HP khi bị đánh, tăng 500 sát thương cho đạn.",
       action: {
         type: "hellfireWalnut",
         sunPerMana: 300,
@@ -552,6 +585,33 @@ const ZOMBIE_CONFIG = {
       spawnOnAppearance: true,
       sunReward: 1000,
       scoreReward: 200
+    },
+    // THÂY MA 9 - QUỶ ĐỎ I
+    thayma9: {
+      name: "Quỷ đỏ I",
+      baseHp: 2000,
+      speed: 0.025,
+      attackDamage: 10,
+      canAttack: true,
+      canShoot: true,
+      shootInterval: 500,
+      shootDamage: 30,
+      sunReward: 200,
+      scoreReward: 20
+    },
+    // THÂY MA 10 - QUỶ ĐỎ II
+    thayma10: {
+      name: "Quỷ đỏ II",
+      baseHp: 50000,
+      speed: 0.05,
+      attackDamage: 15,
+      canAttack: true,
+      canShoot: true,
+      shootInterval: 400,
+      shootDamage: 100,
+      immuneToControl: true,
+      sunReward: 300,
+      scoreReward: 30
     }
   },
   
@@ -589,6 +649,29 @@ document.getElementById("startBtn").onclick = function() {
 <!-- File JavaScript chính của game -->
 <script src="plant-selection.js"></script>
 <script src="game-main.js"></script>
+<!-- Thêm vào cuối file index.html, trước </body> -->
+<script>
+// Xử lý phím ESC để đóng modal
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    const modal = document.getElementById('plantDetailModal');
+    if (modal && modal.style.display === 'flex') {
+      closePlantDetail();
+    }
+  }
+});
 
+// Xử lý click ra ngoài modal
+document.addEventListener('DOMContentLoaded', function() {
+  const modal = document.getElementById('plantDetailModal');
+  if (modal) {
+    modal.addEventListener('click', function(e) {
+      if (e.target === this) {
+        closePlantDetail();
+      }
+    });
+  }
+});
+</script>
 </body>
 </html>

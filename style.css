@@ -894,3 +894,377 @@ button{margin:2px 4px;padding:5px 10px;cursor:pointer;}
   box-shadow: 0 0 15px #FF0000;
   z-index: 1002;
 }
+/* CSS cho thây ma 9 - Quỷ đỏ I */
+.zombie.thayma9 {
+  background: url('thayma9.png') center/cover no-repeat;
+  width: 70px;
+  height: 90px;
+  border: 3px solid #FF4500;
+  box-shadow: 0 0 10px #FF4500;
+}
+
+/* CSS cho thây ma 10 - Quỷ đỏ II */
+.zombie.thayma10 {
+  background: url('thayma10.png') center/cover no-repeat;
+  width: 80px;
+  height: 100px;
+  border: 3px solid #FF0000;
+  box-shadow: 0 0 15px #FF0000;
+  z-index: 1002;
+}
+
+/* Đạn của thây ma 9 */
+.bullet.thayma9-bullet {
+  background: #FF4500;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  border: 2px solid #8B0000;
+  box-shadow: 0 0 5px #FF4500;
+  animation: thayma9BulletPulse 0.5s infinite alternate;
+}
+
+@keyframes thayma9BulletPulse {
+  0% { transform: scale(1); box-shadow: 0 0 5px #FF4500; }
+  100% { transform: scale(1.1); box-shadow: 0 0 10px #FF4500; }
+}
+
+/* Đạn của thây ma 10 */
+.bullet.thayma10-bullet {
+  background: #FF0000;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid #8B0000;
+  box-shadow: 0 0 10px #FF0000;
+  animation: thayma10BulletPulse 0.3s infinite alternate;
+}
+
+@keyframes thayma10BulletPulse {
+  0% { transform: scale(1); box-shadow: 0 0 10px #FF0000; }
+  100% { transform: scale(1.2); box-shadow: 0 0 15px #FF0000; }
+}
+/* Thêm vào cuối file style.css */
+
+/* Modal chi tiết cây */
+#plantDetailModal {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 420px;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.95);
+  display: none;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  z-index: 10000;
+  color: white;
+  padding: 20px;
+  box-sizing: border-box;
+  overflow-y: auto;
+  box-shadow: -5px 0 20px rgba(0, 0, 0, 0.5);
+}
+
+#plantDetailContent {
+  background: linear-gradient(145deg, #2a6e2a, #1e4e1e);
+  padding: 25px;
+  border-radius: 15px;
+  border: 4px solid gold;
+  width: 100%;
+  max-width: 380px;
+  position: relative;
+  margin-top: 20px;
+  box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+  min-height: 500px;
+}
+
+#closeDetailBtn {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: #ff4444;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 35px;
+  height: 35px;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10001;
+  transition: all 0.3s;
+  box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+}
+
+#closeDetailBtn:hover {
+  background: #ff0000;
+  transform: scale(1.1) rotate(90deg);
+  box-shadow: 0 0 15px rgba(255, 0, 0, 0.8);
+}
+
+#detailPlantName {
+  text-align: center;
+  color: gold;
+  font-size: 26px;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 3px solid gold;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  font-weight: bold;
+}
+
+#detailPlantImage {
+  text-align: center;
+  margin-bottom: 25px;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  border: 2px solid rgba(255, 215, 0, 0.3);
+}
+
+#detailPlantImage img {
+  width: 140px;
+  height: 140px;
+  object-fit: contain;
+  border-radius: 10px;
+  border: 3px solid white;
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+  background: linear-gradient(145deg, #3a8a3a, #2a6e2a);
+  padding: 5px;
+}
+
+#plantDetailInfo {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 20px;
+  border-radius: 10px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.detail-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  font-size: 16px;
+}
+
+.detail-label {
+  font-weight: bold;
+  color: #ffcc00;
+  min-width: 120px;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.detail-value {
+  text-align: right;
+  color: white;
+  flex: 1;
+  font-weight: bold;
+}
+
+.detail-description {
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.detail-description .detail-label {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 18px;
+  color: #00ffcc;
+}
+
+.detail-description p {
+  margin: 0;
+  line-height: 1.6;
+  color: #e0e0e0;
+  font-size: 15px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 12px;
+  border-radius: 8px;
+  border-left: 4px solid #00ffcc;
+}
+
+/* Hiệu ứng cho modal */
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+#plantDetailModal {
+  animation: slideInRight 0.4s ease-out;
+}
+
+#plantDetailModal.closing {
+  animation: slideOutRight 0.4s ease-out;
+}
+
+/* Scrollbar cho modal */
+#plantDetailInfo::-webkit-scrollbar {
+  width: 8px;
+}
+
+#plantDetailInfo::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+#plantDetailInfo::-webkit-scrollbar-thumb {
+  background: gold;
+  border-radius: 4px;
+}
+
+#plantDetailInfo::-webkit-scrollbar-thumb:hover {
+  background: #ffcc00;
+}
+
+/* Gợi ý double click */
+.plant-detail-hint {
+  position: absolute;
+  bottom: 5px;
+  left: 0;
+  right: 0;
+  font-size: 10px;
+  color: #ffcc00;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 3px;
+  border-radius: 3px;
+  opacity: 0;
+  transition: opacity 0.3s;
+  z-index: 1;
+}
+
+.plant-select-item:hover .plant-detail-hint {
+  opacity: 1;
+}
+
+/* Hiệu ứng cho double click */
+.plant-select-item.double-clicked {
+  animation: pulseDetail 0.5s;
+}
+
+@keyframes pulseDetail {
+  0% { transform: scale(1); box-shadow: 0 0 0 rgba(255, 215, 0, 0.7); }
+  50% { transform: scale(1.05); box-shadow: 0 0 20px rgba(255, 215, 0, 0.7); }
+  100% { transform: scale(1); box-shadow: 0 0 0 rgba(255, 215, 0, 0.7); }
+}
+
+/* Responsive cho modal */
+@media (max-width: 1400px) {
+  #plantDetailModal {
+    width: 380px;
+  }
+  
+  #plantDetailContent {
+    max-width: 340px;
+  }
+}
+
+@media (max-width: 1200px) {
+  #plantDetailModal {
+    width: 350px;
+  }
+  
+  #plantDetailContent {
+    max-width: 320px;
+    padding: 20px;
+  }
+  
+  #detailPlantName {
+    font-size: 22px;
+  }
+  
+  #detailPlantImage img {
+    width: 120px;
+    height: 120px;
+  }
+}
+
+@media (max-height: 800px) {
+  #plantDetailContent {
+    margin-top: 10px;
+    min-height: 400px;
+  }
+  
+  #plantDetailInfo {
+    max-height: 300px;
+  }
+}
+
+/* Hiệu ứng loading cho ảnh */
+#detailPlantImage img {
+  background: linear-gradient(90deg, #3a8a3a 0%, #5aaa5a 50%, #3a8a3a 100%);
+  background-size: 200% 100%;
+}
+
+#detailPlantImage img.loading {
+  animation: loadingShimmer 1.5s infinite;
+}
+
+@keyframes loadingShimmer {
+  0% { background-position: -200px 0; }
+  100% { background-position: calc(200px + 100%) 0; }
+}
+
+/* Badge cho cây đã chọn */
+.plant-select-item.selected::before {
+  content: "✓";
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: gold;
+  color: #2a6e2a;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 16px;
+  z-index: 2;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+/* Tooltip khi hover */
+.plant-select-item[title]:hover::after {
+  content: attr(title);
+  position: absolute;
+  top: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  white-space: nowrap;
+  z-index: 1000;
+  border: 1px solid gold;
+}
