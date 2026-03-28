@@ -1,499 +1,608 @@
 // plant-selection.js
-// Quản lý việc chọn cây trước khi bắt đầu game
+// Quản lý chọn cây và modal chi tiết
 
-// Biến lưu cây đã chọn (đã khai báo trong index.html)
-// let selectedPlants = new Set(); - Đã khai báo trong index.html
-let availablePlants = [];
+(() => {
+  const STORAGE_KEY = 'pvz_plant_selection_v2';
+  const STORAGE_TIME_KEY = 'pvz_plant_selection_time_v2';
+  const STORAGE_EXPIRE_MS = 24 * 60 * 60 * 1000;
+  const MAX_SELECTION = 15;
+  const BASIC_SUGGESTION = ['sunflower', 'pea', 'wallnut'];
+  const DIFFICULTY_PRESETS = {
+    day: {
+      key: 'day',
+      name: 'Ban ngày',
+      description: 'Mặc định',
+      startingSun: GAME_SETTINGS.startingSun,
+      zombieHpMultiplier: 1,
+      zombieSpeedMultiplier: 1,
+      setupDurationMs: 0,
+      timelineJumpTargetMs: 0,
+      bodyClass: ''
+    },
+    night: {
+      key: 'night',
+      name: 'Ban đêm',
+      description: 'Zombie +100% máu, +10% tốc chạy',
+      startingSun: 1000,
+      zombieHpMultiplier: 2,
+      zombieSpeedMultiplier: 1.1,
+      setupDurationMs: 0,
+      timelineJumpTargetMs: 0,
+      bodyClass: 'difficulty-night-active'
+    },
+    hell: {
+      key: 'hell',
+      name: 'Siêu ác quỷ',
+      description: '7000 mặt trời, setup 2 phút rồi nhảy mốc 10:00',
+      startingSun: 7000,
+      zombieHpMultiplier: 1,
+      zombieSpeedMultiplier: 1,
+      setupDurationMs: 120000,
+      timelineJumpTargetMs: 600000,
+      bodyClass: 'difficulty-hell-active'
+    }
+  };
 
-// Hàm hiển thị màn hình chọn cây
-function showPlantSelectionScreen() {
-  document.getElementById("startScreen").style.display = "none";
-  document.getElementById("plantSelectScreen").style.display = "flex";
-  
-  // Xóa danh sách cây cũ
-  document.getElementById("plantSelectionGrid").innerHTML = "";
-  
-  // Lấy danh sách cây khả dụng (trừ shovel)
-  availablePlants = Object.keys(PLANT_CONFIG.plants).filter(type => type !== "shovel");
-  
-  // Tạo danh sách cây để chọn
-  availablePlants.forEach(type => {
+  const dom = {
+    startScreen: document.getElementById('startScreen'),
+    difficultySelectScreen: document.getElementById('difficultySelectScreen'),
+    plantSelectScreen: document.getElementById('plantSelectScreen'),
+    startBtn: document.getElementById('startBtn'),
+    showGuideBtn: document.getElementById('showGuideBtn'),
+    difficultyBackBtn: document.getElementById('difficultyBackBtn'),
+    difficultyButtons: Array.from(document.querySelectorAll('[data-difficulty]')),
+    autoSelectBtn: document.getElementById('autoSelectBtn'),
+    showFusionListBtn: document.getElementById('showFusionListBtn'),
+    selectionGrid: document.getElementById('plantSelectionGrid'),
+    selectedCount: document.getElementById('selectedCount'),
+    confirmBtn: document.getElementById('confirmPlantsBtn'),
+    resetPlantsBtn: document.getElementById('resetPlantsBtn'),
+    guideModal: document.getElementById('guideModal'),
+    closeGuideBtn: document.getElementById('closeGuideBtn'),
+    modal: document.getElementById('plantDetailModal'),
+    closeDetailBtn: document.getElementById('closeDetailBtn'),
+    detailPlantName: document.getElementById('detailPlantName'),
+    detailPlantRole: document.getElementById('detailPlantRole'),
+    detailPlantImage: document.getElementById('detailPlantImage'),
+    plantDetailInfo: document.getElementById('plantDetailInfo'),
+    fusionModal: document.getElementById('fusionListModal'),
+    closeFusionListBtn: document.getElementById('closeFusionListBtn'),
+    fusionListContainer: document.getElementById('fusionListContainer'),
+  };
+
+
+  function setSelectedDifficulty(key) {
+    const preset = DIFFICULTY_PRESETS[key] || DIFFICULTY_PRESETS.day;
+    window.PVZDifficulty = { ...preset };
+    return window.PVZDifficulty;
+  }
+
+  function showDifficultySelectionScreen() {
+    setSelectedDifficulty(window.PVZDifficulty?.key || 'day');
+    dom.startScreen.classList.remove('visible');
+    dom.startScreen.classList.add('hidden');
+    dom.difficultySelectScreen?.classList.remove('hidden');
+    dom.difficultySelectScreen?.classList.add('visible');
+  }
+
+  function hideDifficultySelectionScreen(showStartAgain = false) {
+    dom.difficultySelectScreen?.classList.remove('visible');
+    dom.difficultySelectScreen?.classList.add('hidden');
+    if (showStartAgain) {
+      dom.startScreen.classList.remove('hidden');
+      dom.startScreen.classList.add('visible');
+    }
+  }
+
+  function continueStartFlowAfterDifficulty() {
+    const hadSaved = loadPlantSelection();
+    if (hadSaved) {
+      const count = ensureSelectionSet().size;
+      const difficultyName = (window.PVZDifficulty?.name || 'Ban ngày');
+      const useSaved = confirm(`Độ khó: ${difficultyName}\n\nPhát hiện đội hình cũ gồm ${count} cây.\n\nNhấn OK để dùng lại.\nNhấn Cancel để chọn đội hình mới.`);
+      if (useSaved) {
+        ensureSelectionSet().add('shovel');
+        hideDifficultySelectionScreen(false);
+        updateShopWithSelectedPlants();
+        window.PVZGame?.startGame();
+        dom.resetPlantsBtn.classList.remove('hidden');
+        return;
+      }
+    }
+
+    hideDifficultySelectionScreen(false);
+    resetSelectionSet();
+    showPlantSelectionScreen();
+  }
+
+  function getSelectablePlants() {
+    return PLANT_ORDER.filter((type) => type !== 'shovel' && type !== 'cay14');
+  }
+  function getFusionRecipes() {
+    if (Array.isArray(window.FUSION_RECIPES) && window.FUSION_RECIPES.length) {
+      return window.FUSION_RECIPES;
+    }
+
+    return [{
+      result: 'cay20',
+      ingredients: ['sunflower', 'pea'],
+      formulaText: 'Hướng dương + Pea → Cây dung hợp 20'
+    }, {
+      result: 'cay21',
+      ingredients: ['cay17', 'peaice'],
+      formulaText: 'Tỏi biến dị + Pea băng → Rồng Băng Tỏi'
+    }, {
+      result: 'cay14',
+      ingredients: ['cay13', 'cay16'],
+      formulaText: 'Hắc diệp thạch + Mìn hắc diệp thạch → Óc chó siêu khuyển'
+    }, {
+      result: 'cay22',
+      ingredients: ['wallnut', 'sunflower'],
+      formulaText: 'Óc chó + Hướng dương → Óc Chó Tỏa Sáng'
+    }, {
+      result: 'cay23',
+      ingredients: ['cay21', 'cay14'],
+      formulaText: 'Rồng Băng Tỏi + Óc chó siêu khuyển → Rồng Băng'
+    }, {
+      result: 'cay26',
+      ingredients: ['cay25', 'cherry'],
+      formulaText: 'Nấm Thôi niên + Cherry → Nấm Thiên Thần',
+      cardHint: 'Cách tạo đặc biệt: đặt Nấm Thôi niên trên sân, rồi chọn Cherry trồng trực tiếp lên ô của Nấm để kích nổ dung hợp.'
+    }];
+  }
+
+  function getSpecialPlantInfos() {
+    if (Array.isArray(window.SPECIAL_PLANT_INFOS) && window.SPECIAL_PLANT_INFOS.length) {
+      return window.SPECIAL_PLANT_INFOS;
+    }
+
+    return [{
+      kind: 'evolution',
+      source: 'cay22',
+      result: 'cay24',
+      formulaText: 'Óc Chó Tỏa Sáng → đủ 100 mana → Óc Chó Thăng Hoa'
+    }];
+  }
+
+  function renderFusionList() {
+    if (!dom.fusionListContainer) return;
+
+    const recipes = getFusionRecipes();
+    const specialInfos = getSpecialPlantInfos();
+    dom.fusionListContainer.innerHTML = '';
+
+    recipes.forEach((recipe) => {
+      const resultConfig = PLANT_CONFIG.plants[recipe.result];
+      if (!resultConfig) return;
+
+      const ingredientsText = recipe.ingredients.map((type) => PLANT_CONFIG.plants[type]?.name || type).join(' + ');
+      const card = document.createElement('button');
+      card.type = 'button';
+      card.className = 'fusion-card';
+      card.innerHTML = `
+        <div class="fusion-thumb">${createImageTag(resultConfig.image, resultConfig.name)}</div>
+        <div class="fusion-info">
+          <div class="fusion-name">${resultConfig.name}</div>
+          <div class="fusion-formula">${ingredientsText} → ${resultConfig.name}</div>
+          <div class="fusion-meta">${recipe.cardHint || 'Không chọn trực tiếp trong trận · Giữ Shift rồi kéo một nguyên liệu vào nguyên liệu còn lại trên sân.'}</div>
+        </div>
+      `;
+      card.addEventListener('click', () => {
+        closeFusionListModal();
+        showPlantDetail(recipe.result);
+      });
+      dom.fusionListContainer.appendChild(card);
+    });
+
+    specialInfos.forEach((entry) => {
+      const resultConfig = PLANT_CONFIG.plants[entry.result];
+      const sourceName = PLANT_CONFIG.plants[entry.source]?.name || entry.source;
+      if (!resultConfig) return;
+
+      const card = document.createElement('button');
+      card.type = 'button';
+      card.className = 'fusion-card evolution-card';
+      card.innerHTML = `
+        <div class="fusion-thumb">${createImageTag(resultConfig.image, resultConfig.name)}</div>
+        <div class="fusion-info">
+          <div class="fusion-name">${resultConfig.name}</div>
+          <div class="fusion-formula">${entry.formulaText || `${sourceName} → ${resultConfig.name}`}</div>
+          <div class="fusion-meta">Cây đặc biệt không dung hợp trực tiếp · tiến hóa từ ${sourceName} sau khi tích đủ mana.</div>
+        </div>
+      `;
+      card.addEventListener('click', () => {
+        closeFusionListModal();
+        showPlantDetail(entry.result);
+      });
+      dom.fusionListContainer.appendChild(card);
+    });
+  }
+
+  function showFusionListModal() {
+    renderFusionList();
+    dom.fusionModal.classList.remove('hidden');
+    dom.fusionModal.classList.add('visible');
+  }
+
+  function closeFusionListModal() {
+    dom.fusionModal.classList.remove('visible');
+    dom.fusionModal.classList.add('hidden');
+  }
+
+
+  function resetSelectionSet() {
+    window.selectedPlants = new Set();
+  }
+
+  function ensureSelectionSet() {
+    if (!(window.selectedPlants instanceof Set)) {
+      window.selectedPlants = new Set();
+    }
+    return window.selectedPlants;
+  }
+
+  function createImageTag(src, alt) {
+    return `<img src="${src}" alt="${alt}" onerror="this.remove(); this.parentNode.innerHTML='🌿';">`;
+  }
+
+  function showPlantSelectionScreen() {
+    ensureSelectionSet();
+    dom.startScreen.classList.remove('visible');
+    dom.startScreen.classList.add('hidden');
+    dom.plantSelectScreen.classList.remove('hidden');
+    dom.plantSelectScreen.classList.add('visible');
+    renderSelectionCards();
+    applySuggestedBasicSelection();
+    updateSelectedCount();
+  }
+
+  function renderSelectionCards() {
+    dom.selectionGrid.innerHTML = '';
+
+    getSelectablePlants().forEach((type) => {
+      const config = PLANT_CONFIG.plants[type];
+      const card = document.createElement('article');
+      card.className = 'plant-select-card';
+      card.dataset.type = type;
+      card.innerHTML = `
+        <div class="thumb">${createImageTag(config.image, config.name)}</div>
+        <div>
+          <h3>${config.name}</h3>
+          <div class="selection-meta">${config.role} · ${config.cost} ☀️ · ${config.maxHp || config.hp} HP</div>
+          <p>${config.description}</p>
+          <div class="selection-actions">
+            <button type="button" class="ghost-btn toggle-btn">Chọn</button>
+            <button type="button" class="ghost-btn info-btn">Chi tiết</button>
+          </div>
+        </div>
+      `;
+
+      card.querySelector('.toggle-btn').addEventListener('click', () => togglePlantSelection(type));
+      card.querySelector('.info-btn').addEventListener('click', () => showPlantDetail(type));
+      dom.selectionGrid.appendChild(card);
+    });
+  }
+
+  function getActionSummary(config) {
+    const action = config.action || {};
+    const bullet = action.bullet || {};
+
+    switch (action.type) {
+      case 'sunProducer':
+        return `Tạo ${action.amount} mặt trời mỗi ${(action.interval / 1000).toFixed(action.interval % 1000 === 0 ? 0 : 1)} giây.`;
+      case 'shooter':
+        return `${bullet.count || 1} viên / ${(action.interval / 1000).toFixed(1)} giây, ${bullet.power || 0} sát thương/viên${bullet.freeze ? ', có làm chậm' : ''}${bullet.knock ? ', có đẩy lùi' : ''}${action.cost ? `, tốn thêm ${action.cost} mặt trời mỗi phát` : ''}.`;
+      case 'exploder':
+        return `Kích nổ sau ${(action.delay / 1000).toFixed(1)} giây, gây ${action.damage} sát thương trong bán kính ${action.range} ô.`;
+      case 'reflector':
+        return 'Phản lại đạn của địch. Mỗi lần phản đạn tiêu hao 1 máu của cây.';
+      case 'enhancer':
+        return `Tăng ${(Math.round((action.multiplier - 1) * 100))}% sát thương cho xạ thủ trong phạm vi ${action.radius} ô.`;
+      case 'blocker':
+        return `Tự hồi ${action.healPerSecond} máu mỗi giây.`;
+      case 'areaHealer':
+        return `Nhận giảm ${Math.round(action.damageReduction * 100)}% sát thương, phát xung ${action.damage} sát thương mỗi ${(action.interval / 1000).toFixed(1)} giây trong bán kính ${action.range} ô.`;
+      case 'hellCannon':
+        return `Bắn nhanh mỗi ${(action.interval / 1000).toFixed(1)} giây, ${bullet.power} sát thương, có đẩy lùi.`;
+      case 'mine':
+        return `Hồi ${action.healPerSecond} máu mỗi giây cho toàn đội, mỗi lần bị đánh phản kích ${action.explosionDamage} sát thương toàn sân.`;
+      case 'garlic':
+        return `Tấn công trong ${bullet.range} ô, mỗi phát ${bullet.power} sát thương. Khi bị đánh, ép zombie đổi hàng và làm chậm mạnh.`;
+      case 'thrower':
+        return `Đạn chính ${bullet.mainDamage} sát thương, nảy ${bullet.bounceCount} lần, mỗi lần ${bullet.bounceDamage} sát thương. Tích lũy làm chậm vĩnh viễn.`;
+      case 'hellfireWalnut':
+        return `Nhận giảm ${Math.round(action.damageReduction * 100)}% sát thương, bị đánh sẽ hồi ${action.healOnHit} máu, và tăng ${action.bulletEnhanceDamage} sát thương cho đạn đồng minh khi cây còn sống.`;
+      case 'fusionShooter':
+        return `Bắn 1 viên / ${(action.interval / 1000).toFixed(1)} giây, ${bullet.power || 0} sát thương/viên. Có ${(Math.round((bullet.instaKillChance || 0) * 100))}% tỉ lệ kết liễu ngay Thây ma 1-6, mỗi phát thứ 10 cho ${(action.sunPerTenShots || 100)} mặt trời.`;
+      case 'dragonGarlic':
+        return `Đánh gần trong chính ô đứng và 1 ô phía trước, mỗi ${(action.interval / 1000).toFixed(1)} giây gây ${action.damage || bullet.power || 0} sát thương. Mỗi đòn có ${Math.round((action.killChance || 0) * 100)}% kết liễu ngay. Khi bị cắn sẽ ép zombie đổi hàng và đóng băng ${((action.defenseEffect?.freezeDuration || 0) / 1000).toFixed(0)} giây. Khi chết phát nổ gây ${action.deathExplosionDamage || 0} sát thương quanh mình và trả lại ${action.sunOnDeath || 0} mặt trời.`;
+      case 'dragonBreath':
+        return `Mỗi ${(action.interval / 1000).toFixed(0)} giây phun một làn băng phủ toàn bộ các ô phía trước trong ${(action.duration / 1000).toFixed(1)} giây. Zombie chạm vào mất tối đa ${action.damage || 70} máu, bị chậm ${Math.round((1 - (action.slowFactor || 0.5)) * 100)}% trong ${((action.slowDuration || 1000) / 1000).toFixed(0)} giây, và nếu bị kết liễu có ${Math.round((action.spawnChance || 0.01) * 100)}% cơ hội mọc ra ${PLANT_CONFIG.plants[action.spawnType || 'wallnut']?.name || 'Óc chó'} ở ô vừa chết.`;
+      case 'evolvedSunProducer':
+        return `Mỗi ${(action.interval / 1000).toFixed(0)} giây tạo ${action.amount || 25} mặt trời. Mỗi lần bị đánh cho ${action.sunOnHit || 100} mặt trời. Khi chết sẽ lăn về phía trước gây ${action.deathRollDamage || 500} sát thương trên đường lăn.`;
+      case 'hypnoFungus':
+        return `Có 1 máu. Zombie nào tấn công cây này sẽ đổi phe với lượng máu hiện tại và bị giảm ${Math.round((1 - (action.convertDamageMultiplier || 0.75)) * 100)}% sát thương gây ra.`;
+      case 'angelMushroom':
+        return `Cứ 10 giây triệu hồi 1 ${ZOMBIE_CONFIG.zombies[action.summonType || 'thayma5']?.name || 'Thây ma 5'} phe mình với 100% sức mạnh. Mỗi 5 giây bắn 1 mũi tên xuyên mọi mục tiêu gây ${action.arrowDamage || 500} sát thương. Khi bị tấn công sẽ thôi niên kẻ đánh và chỉ bị phá hủy sau ${action.hitShieldCount || 10} lần trúng đòn.`;
+      case 'tool':
+        return 'Đào cây đã trồng và trả lại 50% giá gốc.';
+      default:
+        return 'Không có hành động chủ động.';
+    }
+  }
+
+  function showPlantDetail(type) {
     const config = PLANT_CONFIG.plants[type];
-    const plantItem = document.createElement("div");
-    plantItem.className = "plant-select-item";
-    plantItem.dataset.type = type;
-    plantItem.title = `Click đơn để chọn, Double click để xem chi tiết`;
-    
-    // Xử lý click
-    plantItem.onclick = (e) => {
-      const now = Date.now();
-      const lastClick = plantItem.dataset.lastClick || 0;
-      
-      // Nếu click trong vòng 300ms sau click trước đó => double click
-      if (now - lastClick < 300) {
-        // Double click: hiển thị chi tiết
-        e.preventDefault();
-        e.stopPropagation();
-        plantItem.classList.add("double-clicked");
-        setTimeout(() => {
-          plantItem.classList.remove("double-clicked");
-        }, 500);
-        showPlantDetail(type);
-      } else {
-        // Single click: chọn/bỏ chọn cây
-        togglePlantSelection(type);
-      }
-      
-      plantItem.dataset.lastClick = now;
-    };
-    
-    // Tạo nội dung cây
-    plantItem.innerHTML = `
-      <img src="${config.image}" alt="${config.name}" onerror="this.src='https://via.placeholder.com/60x60?text=Cây'" />
-      <div class="plant-select-info">
-        <div class="plant-name">${config.name}</div>
-        <div class="plant-cost">Giá: ${config.cost} ☀️</div>
-        <div class="plant-hp">Máu: ${config.hp} ❤️</div>
+    if (!config) return;
+
+    dom.detailPlantName.textContent = config.name;
+    dom.detailPlantRole.textContent = config.role || 'Vai trò chưa xác định';
+    dom.detailPlantImage.innerHTML = createImageTag(config.image, config.name);
+
+    const extraLines = [];
+    if (config.limitPerRow) extraLines.push(`Giới hạn: tối đa ${config.limitPerRow} cây mỗi hàng.`);
+    if (type === 'cay19') extraLines.push('Mở khóa: hạ ít nhất 1 Sứ giả khe nứt trong trận.');
+    if (type === 'cay20') {
+      extraLines.push('Chỉ có thể tạo trên sân bằng dung hợp, không xuất hiện trong danh sách chọn cây.');
+      extraLines.push('Công thức: Hướng dương + Pea → Cây dung hợp 20.');
+      extraLines.push('Thao tác: giữ Shift rồi kéo 1 nguyên liệu vào nguyên liệu còn lại để dung hợp.');
+    }
+    if (type === 'cay21') {
+      extraLines.push('Chỉ có thể tạo trên sân bằng dung hợp, không xuất hiện trong danh sách chọn cây.');
+      extraLines.push('Công thức: Tỏi biến dị + Pea băng → Rồng Băng Tỏi.');
+      extraLines.push('Thao tác: giữ Shift rồi kéo 1 nguyên liệu vào nguyên liệu còn lại để dung hợp.');
+      extraLines.push('Khi bắn, cây sẽ đổi tạm sang ảnh cay21a.png rồi trở lại cay21.png.');
+    }
+    if (type === 'cay22') {
+      extraLines.push('Chỉ có thể tạo trên sân bằng dung hợp, không xuất hiện trong danh sách chọn cây.');
+      extraLines.push('Công thức: Óc chó + Hướng dương → Óc Chó Tỏa Sáng.');
+      extraLines.push('Thao tác: giữ Shift rồi kéo 1 nguyên liệu vào nguyên liệu còn lại để dung hợp.');
+      extraLines.push('Animation: bình thường dùng ảnh cay22.png, khi hoạt động sẽ đổi tạm sang cay22a.png rồi trở lại.');
+      extraLines.push('Khi chết sẽ tạo 500 mặt trời.');
+      extraLines.push('Tiến hóa: cây tự nhận 1 mana mỗi giây. Đủ 100 mana sẽ tiến hóa thành Óc Chó Thăng Hoa.');
+    }
+    if (type === 'cay23') {
+      extraLines.push('Chỉ có thể tạo trên sân bằng dung hợp, không xuất hiện trong danh sách chọn cây.');
+      extraLines.push('Công thức: Rồng Băng Tỏi + Óc chó siêu khuyển → Rồng Băng.');
+      extraLines.push('Thao tác: giữ Shift rồi kéo 1 nguyên liệu vào nguyên liệu còn lại để dung hợp.');
+      extraLines.push('Khi tấn công, cây đổi tạm sang ảnh cay23a.png rồi trở về cay23.png.');
+      extraLines.push('Làn phun dùng ảnh cay23b.png, to đúng 1 ô, phủ toàn bộ các ô phía trước trong 0.5 giây.');
+      extraLines.push('Mỗi zombie chạm làn phun sẽ mất tối đa 1000 máu và bị chậm 50% trong 1 giây.');
+      extraLines.push('Nếu chính đòn phun kết liễu zombie thì có 1% cơ hội mọc ra một Óc chó ở ô trống nơi zombie chết.');
+    }
+    if (type === 'cay24') {
+      extraLines.push('Không xuất hiện trong danh sách chọn cây và cũng không dung hợp trực tiếp.');
+      extraLines.push('Tiến hóa: Óc Chó Tỏa Sáng tích 1 mana mỗi giây, đủ 100 mana sẽ biến thành cay24.png.');
+      extraLines.push('Sau khi tiến hóa, cây có 3000 máu, cứ mỗi 5 giây cho 25 mặt trời.');
+      extraLines.push('Mỗi lần bị đánh, cây lập tức tạo 100 mặt trời cho người chơi.');
+      extraLines.push('Khi chết, cây lăn thẳng về phía trước trong lane và gây 500 sát thương trên đường lăn.');
+    }
+    if (type === 'cay25') {
+      extraLines.push('Đây là cây thường có thể mua trực tiếp với giá 100 mặt trời.');
+      extraLines.push('Zombie miễn nhiễm cứng như Thây ma 6-10 sẽ không thể bị thôi niên bởi cây này.');
+      extraLines.push('Có thể dùng Cherry trồng trực tiếp lên chính cây này để kích nổ dung hợp thành Nấm Thiên Thần.');
+    }
+    if (type === 'cay26') {
+      extraLines.push('Không xuất hiện trong danh sách chọn cây, chỉ tạo bằng cách đặc biệt.');
+      extraLines.push('Cách tạo: đặt Nấm Thôi niên trên sân, chọn Cherry rồi trồng trực tiếp lên ô của Nấm để nổ xung quanh gây 300 sát thương và dung hợp thành Nấm Thiên Thần.');
+      extraLines.push('Cứ mỗi 10 giây cây sẽ gọi 1 Thây ma 5 phe mình với 100% sức mạnh gốc.');
+      extraLines.push('Khi bị bất kỳ zombie nào tấn công, cây sẽ thôi niên kẻ đánh nếu mục tiêu không có miễn nhiễm cứng.');
+      extraLines.push('Cây chỉ bị phá hủy sau đúng 10 lần trúng đòn, không chết theo lượng damage của từng hit.');
+    }
+
+    dom.plantDetailInfo.innerHTML = `
+      <div class="detail-grid">
+        <div class="detail-card">
+          <strong>Thông số</strong>
+          <div>Giá: ${config.cost} ☀️</div>
+          <div>Máu: ${config.maxHp || config.hp} HP</div>
+          <div>Kích thước: ${config.width} × ${config.height}px</div>
+        </div>
+        <div class="detail-card">
+          <strong>Cơ chế chính</strong>
+          <div>${getActionSummary(config)}</div>
+        </div>
       </div>
-      <div class="plant-detail-hint">Double click để xem chi tiết</div>
+      <div class="detail-card">
+        <strong>Mô tả</strong>
+        <div>${config.description}</div>
+      </div>
+      <div class="detail-card">
+        <strong>Mẹo dùng</strong>
+        <ul class="detail-list">
+          ${(config.tips || []).map((tip) => `<li>${tip}</li>`).join('')}
+          ${extraLines.map((tip) => `<li>${tip}</li>`).join('')}
+        </ul>
+      </div>
     `;
-    
-    document.getElementById("plantSelectionGrid").appendChild(plantItem);
-  });
-  
-  // Reset danh sách đã chọn
-  selectedPlants.clear();
-  
-  // Tự động chọn một số cây cơ bản để giúp người chơi
-  autoSelectBasicPlants();
-  
-  updateSelectedCount();
-  
-  // Thiết lập sự kiện cho nút xác nhận
-  document.getElementById("confirmPlantsBtn").onclick = confirmPlantSelection;
-  
-  // Thiết lập sự kiện cho nút đóng modal
-  document.getElementById("closeDetailBtn").onclick = closePlantDetail;
-  
-  // Đóng modal khi click ra ngoài
-  document.getElementById("plantDetailModal").onclick = function(e) {
-    if (e.target === this) {
-      closePlantDetail();
-    }
-  };
-}
 
-// Hàm hiển thị chi tiết cây
-function showPlantDetail(plantType) {
-  const config = PLANT_CONFIG.plants[plantType];
-  if (!config) return;
-  
-  // Cập nhật thông tin modal
-  document.getElementById("detailPlantName").textContent = config.name;
-  
-  const detailImage = document.getElementById("detailPlantImage");
-  detailImage.innerHTML = '';
-  
-  const img = document.createElement("img");
-  img.src = config.image;
-  img.alt = config.name;
-  img.onerror = function() {
-    this.src = 'https://via.placeholder.com/140x140?text=Cây';
-    this.classList.remove('loading');
-  };
-  img.onload = function() {
-    this.classList.remove('loading');
-  };
-  img.classList.add('loading');
-  detailImage.appendChild(img);
-  
-  // Tạo thông tin chi tiết
-  let detailHTML = `
-    <div class="detail-item">
-      <span class="detail-label">Tên cây:</span>
-      <span class="detail-value">${config.name}</span>
-    </div>
-    <div class="detail-item">
-      <span class="detail-label">Giá mặt trời:</span>
-      <span class="detail-value">${config.cost} ☀️</span>
-    </div>
-    <div class="detail-item">
-      <span class="detail-label">Máu (HP):</span>
-      <span class="detail-value">${config.hp} ❤️</span>
-    </div>
-    <div class="detail-item">
-      <span class="detail-label">Kích thước:</span>
-      <span class="detail-value">${config.width}×${config.height}px</span>
-    </div>
-  `;
-  
-  // Thêm thông tin kỹ năng nếu có
-  if (config.action && config.action.type !== "none" && config.action.type !== "tool") {
-    detailHTML += `<div class="detail-item"><span class="detail-label">Loại kỹ năng:</span><span class="detail-value">${getActionTypeName(config.action.type)}</span></div>`;
-    
-    const skillDetails = getSkillDetails(config.action);
-    if (skillDetails) {
-      detailHTML += `<div class="detail-item"><span class="detail-label">Chi tiết kỹ năng:</span><span class="detail-value">${skillDetails}</span></div>`;
-    }
+    dom.modal.classList.remove('hidden');
+    dom.modal.classList.add('visible');
   }
-  
-  // Thêm mô tả
-  detailHTML += `
-    <div class="detail-description">
-      <span class="detail-label">Mô tả chi tiết:</span>
-      <p>${config.description || "Cây phòng thủ cơ bản."}</p>
-    </div>
-  `;
-  
-  // Thêm ghi chú đặc biệt
-  if (config.limitPerRow) {
-    detailHTML += `<div class="detail-item"><span class="detail-label">Giới hạn:</span><span class="detail-value">Tối đa ${config.limitPerRow} cây/hàng</span></div>`;
-  }
-  
-  if (plantType === 'cay19') {
-    detailHTML += `<div class="detail-item"><span class="detail-label">Điều kiện mở khóa:</span><span class="detail-value">Tiêu diệt 1 Sứ giả khe nứt</span></div>`;
-  }
-  
-  document.getElementById("plantDetailInfo").innerHTML = detailHTML;
-  
-  // Hiển thị modal
-  document.getElementById("plantDetailModal").style.display = "flex";
-  
-  // Đảm bảo modal ở trên cùng
-  document.getElementById("plantDetailModal").style.zIndex = "10000";
-}
 
-// Hàm lấy tên loại kỹ năng
-function getActionTypeName(actionType) {
-  const typeNames = {
-    "sunProducer": "Sản xuất mặt trời",
-    "shooter": "Bắn đạn",
-    "exploder": "Tự nổ",
-    "reflector": "Phản đạn",
-    "enhancer": "Tăng cường",
-    "blocker": "Chặn đường",
-    "areaHealer": "Hỗ trợ vùng",
-    "hellCannon": "Đại bác địa ngục",
-    "mine": "Mìn",
-    "garlic": "Tỏi tấn công",
-    "thrower": "Ném đạn",
-    "hellfireWalnut": "Óc chó địa ngục"
-  };
-  
-  return typeNames[actionType] || "Đặc biệt";
-}
+  function closePlantDetail() {
+    dom.modal.classList.remove('visible');
+    dom.modal.classList.add('hidden');
+  }
 
-// Hàm lấy chi tiết kỹ năng
-function getSkillDetails(action) {
-  if (!action) return "";
-  
-  switch(action.type) {
-    case "sunProducer":
-      return `Sản xuất ${action.amount} ☀️ mỗi ${(action.interval/1000).toFixed(1)} giây`;
-    case "shooter":
-      const bullet = action.bullet || {};
-      let desc = `${bullet.count || 1} đạn/${(action.interval/1000).toFixed(1)}s, ${bullet.power || 1} sát thương`;
-      if (bullet.freeze) desc += ", làm chậm";
-      if (bullet.knock) desc += ", đẩy lùi";
-      if (action.cost) desc += ` (tốn ${action.cost}☀️)`;
-      return desc;
-    case "exploder":
-      return `Nổ sau ${(action.delay/1000).toFixed(1)}s, ${action.damage} sát thương, phạm vi ${action.range} ô`;
-    case "blocker":
-      if (action.healPerSecond) {
-        return `Hồi ${action.healPerSecond} HP/giây`;
+  function togglePlantSelection(type) {
+    const selected = ensureSelectionSet();
+    const card = dom.selectionGrid.querySelector(`[data-type="${type}"]`);
+
+    if (selected.has(type)) {
+      selected.delete(type);
+    } else {
+      if (selected.size >= MAX_SELECTION) {
+        alert(`Bạn chỉ có thể chọn tối đa ${MAX_SELECTION} loại cây.`);
+        return;
       }
-      return "Chặn zombie hiệu quả";
-    case "areaHealer":
-      return `Giảm ${(action.damageReduction*100)}% sát thương, gây ${action.damage} sát thương mỗi ${(action.interval/1000).toFixed(1)}s`;
-    case "hellCannon":
-      return `${(action.bullet.power || 0)} sát thương, ${(action.interval/1000).toFixed(1)}s/lần`;
-    case "mine":
-      return `Hồi ${action.healPerSecond} HP/giây, nổ ${action.explosionDamage} sát thương`;
-    case "garlic":
-      const garlicBullet = action.bullet || {};
-      const defense = action.defenseEffect || {};
-      let garlicDesc = `Bắn tầm ${garlicBullet.range || 1} ô, ${garlicBullet.power || 0} sát thương`;
-      if (defense.slowAmount) {
-        garlicDesc += `, làm chậm ${(defense.slowAmount*100)}% khi bị đánh`;
-      }
-      return garlicDesc;
-    case "thrower":
-      const throwBullet = action.bullet || {};
-      return `${throwBullet.mainDamage || 0} sát thương chính + ${throwBullet.bounceCount || 0} đạn nảy`;
-    case "hellfireWalnut":
-      return `Giảm ${(action.damageReduction*100)}% sát thương, hồi ${action.healOnHit} HP khi bị đánh`;
-    default:
-      return "";
+      selected.add(type);
+    }
+
+    if (card) {
+      card.classList.toggle('selected', selected.has(type));
+      const toggleBtn = card.querySelector('.toggle-btn');
+      if (toggleBtn) toggleBtn.textContent = selected.has(type) ? 'Bỏ chọn' : 'Chọn';
+    }
+
+    updateSelectedCount();
   }
-}
 
-// Hàm đóng modal chi tiết
-function closePlantDetail() {
-  const modal = document.getElementById("plantDetailModal");
-  modal.classList.add("closing");
-  
-  setTimeout(() => {
-    modal.style.display = "none";
-    modal.classList.remove("closing");
-  }, 400);
-}
-
-// Hàm tự động chọn một số cây cơ bản
-function autoSelectBasicPlants() {
-  // Các cây cơ bản nên có
-  const basicPlants = ['sunflower', 'pea', 'wallnut'];
-  
-  basicPlants.forEach(plantType => {
-    if (availablePlants.includes(plantType)) {
-      selectedPlants.add(plantType);
-      const plantItem = document.querySelector(`.plant-select-item[data-type="${plantType}"]`);
-      if (plantItem) {
-        plantItem.classList.add("selected");
-      }
-    }
-  });
-}
-
-// Hàm chọn/bỏ chọn cây
-function togglePlantSelection(plantType) {
-  const plantItem = document.querySelector(`.plant-select-item[data-type="${plantType}"]`);
-  
-  if (selectedPlants.has(plantType)) {
-    // Bỏ chọn
-    selectedPlants.delete(plantType);
-    if (plantItem) {
-      plantItem.classList.remove("selected");
-    }
-  } else {
-    // Kiểm tra số lượng đã chọn
-    if (selectedPlants.size >= 15) {
-      alert("Bạn chỉ có thể chọn tối đa 15 loại cây!");
+  function applySuggestedBasicSelection() {
+    const selected = ensureSelectionSet();
+    if (selected.size > 0) {
+      syncSelectionUI();
       return;
     }
-    
-    // Chọn cây
-    selectedPlants.add(plantType);
-    if (plantItem) {
-      plantItem.classList.add("selected");
-    }
-  }
-  
-  updateSelectedCount();
-}
 
-// Hàm cập nhật số lượng cây đã chọn
-function updateSelectedCount() {
-  const countElement = document.getElementById("selectedCount");
-  const confirmBtn = document.getElementById("confirmPlantsBtn");
-  
-  const count = selectedPlants.size;
-  if (countElement) {
-    countElement.textContent = `Đã chọn: ${count}/15`;
-    countElement.style.color = count >= 1 ? "#00ff00" : "#ff4444";
-    countElement.style.fontWeight = "bold";
-    countElement.style.fontSize = "18px";
-  }
-  
-  // Bật/tắt nút xác nhận
-  if (confirmBtn) {
-    confirmBtn.disabled = count < 1 || count > 15;
-    if (!confirmBtn.disabled) {
-      confirmBtn.style.background = "linear-gradient(145deg, #ffcc00, #ff9900)";
-      confirmBtn.style.boxShadow = "0 0 15px rgba(255, 204, 0, 0.5)";
-    } else {
-      confirmBtn.style.background = "#666";
-      confirmBtn.style.boxShadow = "none";
-    }
-  }
-}
-
-// Hàm xác nhận lựa chọn và bắt đầu game
-function confirmPlantSelection() {
-  if (selectedPlants.size < 1) {
-    alert("Vui lòng chọn ít nhất 1 loại cây!");
-    return;
-  }
-  
-  if (selectedPlants.size > 15) {
-    alert("Chỉ được chọn tối đa 15 loại cây!");
-    return;
-  }
-  
-  // Lưu lựa chọn
-  savePlantSelection();
-  
-  // Ẩn màn hình chọn cây và modal nếu đang mở
-  document.getElementById("plantSelectScreen").style.display = "none";
-  closePlantDetail();
-  
-  // Cập nhật shop chỉ hiển thị cây đã chọn
-  updateShopWithSelectedPlants();
-  
-  // Khởi tạo và bắt đầu game
-  initGameAfterSelection();
-}
-
-// Hàm khởi tạo game sau khi chọn cây
-function initGameAfterSelection() {
-  // Đảm bảo shovel luôn có sẵn
-  if (!selectedPlants.has("shovel")) {
-    selectedPlants.add("shovel");
-  }
-  
-  // Gọi hàm startGame từ game-main.js
-  if (typeof startGame === 'function') {
-    startGame();
-  } else {
-    // Nếu hàm chưa tồn tại, thử lại sau
-    setTimeout(() => {
-      if (typeof startGame === 'function') {
-        startGame();
+    BASIC_SUGGESTION.forEach((type) => {
+      if (getSelectablePlants().includes(type)) {
+        selected.add(type);
       }
-    }, 100);
+    });
+    syncSelectionUI();
   }
-  
-  // Thêm nút chọn lại cây vào panel
-  addResetButtonToGame();
-  
-  console.log("🚀 Game đã bắt đầu với " + (selectedPlants.size - 1) + " loại cây đã chọn!");
-}
 
-// Hàm cập nhật shop chỉ hiển thị cây đã chọn
-function updateShopWithSelectedPlants() {
-  // Lấy tất cả các item shop
-  const shopItems = document.querySelectorAll(".shop-item");
-  
-  // Ẩn tất cả các cây (trừ shovel và noSelect)
-  shopItems.forEach(item => {
-    const plantId = item.id;
-    if (plantId !== "shovel" && plantId !== "noSelect" && plantId !== "cay19") {
-      const plantType = getPlantTypeFromId(plantId);
-      if (plantType && !selectedPlants.has(plantType) && plantType !== "shovel") {
-        item.style.display = "none";
-      } else if (plantType && selectedPlants.has(plantType)) {
-        item.style.display = "inline-block";
-      }
-    }
-  });
-  
-  // Cây cay19 cần xử lý đặc biệt
-  const cay19Item = document.getElementById("cay19");
-  if (cay19Item) {
-    if (selectedPlants.has("cay19")) {
-      cay19Item.style.display = "inline-block";
-    } else {
-      cay19Item.style.display = "none";
-    }
+  function syncSelectionUI() {
+    const selected = ensureSelectionSet();
+    dom.selectionGrid.querySelectorAll('.plant-select-card').forEach((card) => {
+      const active = selected.has(card.dataset.type);
+      card.classList.toggle('selected', active);
+      const btn = card.querySelector('.toggle-btn');
+      if (btn) btn.textContent = active ? 'Bỏ chọn' : 'Chọn';
+    });
+    updateSelectedCount();
   }
-}
 
-// Hàm lấy loại cây từ ID
-function getPlantTypeFromId(id) {
-  const mapping = {
-    "sunflower": "sunflower",
-    "bigsun": "bigsun", 
-    "pea": "pea",
-    "peaice": "peaice",
-    "pea2": "pea2",
-    "wallnut": "wallnut",
-    "cherry": "cherry",
-    "azami": "azami",
-    "cay10": "cay10",
-    "cay11": "cay11",
-    "cay12": "cay12",
-    "cay13": "cay13",
-    "cay14": "cay14",
-    "cay15": "cay15",
-    "cay16": "cay16",
-    "cay17": "cay17",
-    "cay18": "cay18",
-    "cay19": "cay19",
-    "shovel": "shovel"
-  };
-  
-  return mapping[id] || id;
-}
+  function updateSelectedCount() {
+    const selected = ensureSelectionSet();
+    dom.selectedCount.textContent = `Đã chọn: ${selected.size}/${MAX_SELECTION}`;
+    dom.selectedCount.style.color = selected.size >= 1 ? 'var(--good)' : 'var(--danger)';
+    dom.confirmBtn.disabled = selected.size < 1 || selected.size > MAX_SELECTION;
+  }
 
-// Hàm lưu lựa chọn vào localStorage
-function savePlantSelection() {
-  // Luôn thêm shovel vào danh sách
-  selectedPlants.add("shovel");
-  
-  const selection = Array.from(selectedPlants);
-  localStorage.setItem('pvz_plant_selection', JSON.stringify(selection));
-  localStorage.setItem('pvz_plant_selection_time', Date.now());
-  console.log("Đã lưu lựa chọn cây:", selection);
-}
+  function savePlantSelection() {
+    const payload = Array.from(ensureSelectionSet()).filter((type) => type !== 'shovel' && type !== 'cay14');
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+    localStorage.setItem(STORAGE_TIME_KEY, String(Date.now()));
+  }
 
-// Hàm tải lựa chọn từ localStorage
-function loadPlantSelection() {
-  const saved = localStorage.getItem('pvz_plant_selection');
-  const savedTime = localStorage.getItem('pvz_plant_selection_time');
-  
-  // Kiểm tra nếu lựa chọn cũ hơn 1 ngày thì không load
-  if (saved && savedTime && (Date.now() - parseInt(savedTime)) < 86400000) {
+  function loadPlantSelection() {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    const savedAt = Number(localStorage.getItem(STORAGE_TIME_KEY));
+    if (!raw || !savedAt || Number.isNaN(savedAt)) return false;
+    if (Date.now() - savedAt > STORAGE_EXPIRE_MS) return false;
+
     try {
-      const parsed = JSON.parse(saved);
-      selectedPlants = new Set(parsed.filter(type => type !== "shovel")); // Loại bỏ shovel
-      return true;
-    } catch (e) {
-      console.error("Lỗi khi load lựa chọn cây:", e);
+      const parsed = JSON.parse(raw);
+      window.selectedPlants = new Set((Array.isArray(parsed) ? parsed : []).filter((type) => type !== 'shovel' && type !== 'cay14'));
+      return window.selectedPlants.size > 0;
+    } catch (error) {
+      console.error('Không thể đọc dữ liệu chọn cây đã lưu:', error);
+      return false;
     }
   }
-  return false;
-}
 
-// Thêm nút chọn lại cây vào panel khi game bắt đầu
-function addResetButtonToGame() {
-  // Kiểm tra xem đã có nút chưa
-  if (!document.getElementById('resetPlantsBtn')) {
-    const resetButton = document.createElement("button");
-    resetButton.id = "resetPlantsBtn";
-    resetButton.textContent = "🔄 Chọn lại cây";
-    resetButton.style.background = "linear-gradient(145deg, #4a9a4a, #2a6e2a)";
-    resetButton.style.color = "white";
-    resetButton.style.border = "2px solid gold";
-    resetButton.style.borderRadius = "8px";
-    resetButton.style.padding = "8px 15px";
-    resetButton.style.cursor = "pointer";
-    resetButton.style.margin = "0 5px";
-    resetButton.onclick = function() {
-      if (confirm("Bạn có muốn chọn lại cây? Trận đấu hiện tại sẽ kết thúc.")) {
-        localStorage.removeItem('pvz_plant_selection');
-        localStorage.removeItem('pvz_plant_selection_time');
-        location.reload();
-      }
-    };
-    
-    // Thêm vào panel sau nút tạm dừng
-    const pauseBtn = document.getElementById("pauseBtn");
-    if (pauseBtn && pauseBtn.parentNode) {
-      pauseBtn.parentNode.insertBefore(resetButton, pauseBtn.nextSibling);
+  function clearSavedPlantSelection() {
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(STORAGE_TIME_KEY);
+  }
+
+  function updateShopWithSelectedPlants() {
+    const selected = ensureSelectionSet();
+    document.querySelectorAll('.shop-card[data-type]').forEach((card) => {
+      const type = card.dataset.type;
+      const shouldShow = type === 'shovel' || (type !== 'cay14' && selected.has(type)) || (type === 'cay19' && window.PVZGame?.state?.cay19Unlocked);
+      card.classList.toggle('hidden', !shouldShow);
+    });
+  }
+
+  function confirmPlantSelection() {
+    const selected = ensureSelectionSet();
+    if (selected.size < 1 || selected.size > MAX_SELECTION) {
+      alert('Hãy chọn từ 1 đến 15 loại cây trước khi bắt đầu.');
+      return;
     }
-  }
-}
 
-// Hàm cập nhật trạng thái cây 19 trong shop
-function updateCay19ShopItem() {
-  const cay19Item = document.getElementById("cay19");
-  if (!cay19Item) return;
-  
-  if (window.cay19Unlocked) {
-    cay19Item.classList.remove("disabled");
-    cay19Item.title = `Đã tiêu diệt Sứ giả khe nứt: ${window.thayma7Kills || 0}/1 - Giá: ${window.cay19CurrentCost || 0} (Mỗi lần mua tăng 3000 mặt trời)`;
-  } else {
-    cay19Item.classList.add("disabled");
-    cay19Item.title = `Đã tiêu diệt Sứ giả khe nứt: ${window.thayma7Kills || 0}/1 - Giá: ${window.cay19CurrentCost || 0} (Mở khóa khi tiêu diệt 1 Sứ giả khe nứt)`;
+    savePlantSelection();
+    selected.add('shovel');
+    dom.plantSelectScreen.classList.remove('visible');
+    dom.plantSelectScreen.classList.add('hidden');
+    closePlantDetail();
+    updateShopWithSelectedPlants();
+    window.PVZGame?.startGame();
+    dom.resetPlantsBtn.classList.remove('hidden');
   }
-}
 
-// Xuất các hàm cần thiết ra global scope
-window.showPlantSelectionScreen = showPlantSelectionScreen;
-window.updateShopWithSelectedPlants = updateShopWithSelectedPlants;
-window.addResetButtonToGame = addResetButtonToGame;
-window.loadPlantSelection = loadPlantSelection;
-window.updateCay19ShopItem = updateCay19ShopItem;
-window.initGameAfterSelection = initGameAfterSelection;
-window.showPlantDetail = showPlantDetail;
-window.closePlantDetail = closePlantDetail;
+  function showGuideModal() {
+    dom.guideModal?.classList.remove('hidden');
+    dom.guideModal?.classList.add('visible');
+  }
+
+  function closeGuideModal() {
+    dom.guideModal?.classList.remove('visible');
+    dom.guideModal?.classList.add('hidden');
+  }
+
+  function promptStartFlow() {
+    showDifficultySelectionScreen();
+  }
+
+  function bindEvents() {
+    dom.startBtn.addEventListener('click', promptStartFlow);
+    dom.showGuideBtn?.addEventListener('click', showGuideModal);
+    dom.closeGuideBtn?.addEventListener('click', closeGuideModal);
+    dom.guideModal?.addEventListener('click', (event) => {
+      if (event.target === dom.guideModal) closeGuideModal();
+    });
+    dom.difficultyBackBtn?.addEventListener('click', () => hideDifficultySelectionScreen(true));
+    dom.difficultyButtons?.forEach((button) => {
+      button.addEventListener('click', () => {
+        setSelectedDifficulty(button.dataset.difficulty || 'day');
+        continueStartFlowAfterDifficulty();
+      });
+    });
+    dom.confirmBtn.addEventListener('click', confirmPlantSelection);
+    dom.autoSelectBtn.addEventListener('click', () => {
+      resetSelectionSet();
+      applySuggestedBasicSelection();
+    });
+    dom.showFusionListBtn?.addEventListener('click', showFusionListModal);
+    dom.closeDetailBtn.addEventListener('click', closePlantDetail);
+    dom.modal.addEventListener('click', (event) => {
+      if (event.target === dom.modal) closePlantDetail();
+    });
+    dom.closeFusionListBtn?.addEventListener('click', closeFusionListModal);
+    dom.fusionModal?.addEventListener('click', (event) => {
+      if (event.target === dom.fusionModal) closeFusionListModal();
+    });
+    dom.resetPlantsBtn.addEventListener('click', () => {
+      if (!confirm('Bạn muốn xóa đội hình đã lưu và chọn lại từ đầu?')) return;
+      clearSavedPlantSelection();
+      location.reload();
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && dom.modal.classList.contains('visible')) closePlantDetail();
+      if (event.key === 'Escape' && dom.guideModal?.classList.contains('visible')) closeGuideModal();
+      if (event.key === 'Escape' && dom.fusionModal?.classList.contains('visible')) closeFusionListModal();
+      if (event.key === 'Escape' && dom.difficultySelectScreen?.classList.contains('visible')) hideDifficultySelectionScreen(true);
+    });
+  }
+
+  setSelectedDifficulty('day');
+  bindEvents();
+
+  window.showGuideModal = showGuideModal;
+  window.closeGuideModal = closeGuideModal;
+  window.showPlantSelectionScreen = showPlantSelectionScreen;
+  window.showPlantDetail = showPlantDetail;
+  window.closePlantDetail = closePlantDetail;
+  window.showFusionListModal = showFusionListModal;
+  window.closeFusionListModal = closeFusionListModal;
+  window.updateShopWithSelectedPlants = updateShopWithSelectedPlants;
+  window.loadPlantSelection = loadPlantSelection;
+  window.savePlantSelection = savePlantSelection;
+  window.clearSavedPlantSelection = clearSavedPlantSelection;
+  window.PVZDifficultyCatalog = DIFFICULTY_PRESETS;
+})();

@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mini PvZ Refactor</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="startScreen" class="overlay visible">
+    <div class="dialog start-dialog">
+      <h1>🌻 MINI PLANTS VS ZOMBIES 🌻</h1>
+      <p class="lead">Bản đã refactor: sạch script hơn, sửa lỗi chọn cây, sửa vòng lặp gameplay, mô tả cây rõ ràng hơn.</p>
+      <ul class="intro-list">
+        <li>Chọn từ <strong>1 đến 15</strong> loại cây trước khi vào trận.</li>
+        <li><strong>Xẻng</strong> luôn có sẵn, không tính vào số cây chọn.</li>
+        <li><strong>Cây 19</strong> có thể mở khóa giữa trận sau khi hạ <strong>Sứ giả khe nứt</strong>.</li>
+      </ul>
+      <button id="startBtn" class="primary-btn">🚀 Chọn cây và bắt đầu</button>
+    </div>
+  </div>
+
+  <div id="plantSelectScreen" class="overlay hidden">
+    <div class="dialog wide-dialog">
+      <div class="dialog-head">
+        <div>
+          <h2>🌱 Chọn cây cho trận đấu</h2>
+          <p>Nhấn vào thẻ để chọn hoặc bỏ chọn. Nhấn nút <strong>Chi tiết</strong> để xem kỹ kỹ năng.</p>
+        </div>
+        <div id="selectedCount">Đã chọn: 0/15</div>
+      </div>
+      <div id="plantSelectionGrid"></div>
+      <div class="dialog-actions">
+        <button id="autoSelectBtn" class="ghost-btn">⚙️ Gợi ý đội hình cơ bản</button>
+        <button id="confirmPlantsBtn" class="primary-btn" disabled>Xác nhận và bắt đầu</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="plantDetailModal" class="overlay hidden">
+    <div class="dialog detail-dialog">
+      <button id="closeDetailBtn" class="close-btn" aria-label="Đóng">✕</button>
+      <div class="detail-header">
+        <div id="detailPlantImage" class="detail-image"></div>
+        <div>
+          <h3 id="detailPlantName">Tên cây</h3>
+          <p id="detailPlantRole" class="detail-role"></p>
+        </div>
+      </div>
+      <div id="plantDetailInfo" class="detail-body"></div>
+    </div>
+  </div>
+
+  <div id="pauseScreen" class="overlay hidden">
+    <div class="dialog small-dialog">
+      <h2>⏸️ Game đang tạm dừng</h2>
+      <p>Nhấn nút tạm dừng một lần nữa để tiếp tục trận đấu.</p>
+    </div>
+  </div>
+
+  <div id="appShell">
+    <header id="hud">
+      <div class="hud-block">☀️ Mặt trời: <span id="sun">100</span></div>
+      <div class="hud-block">🏆 Điểm: <span id="score">0</span></div>
+      <div class="hud-block">⏱️ <span id="timer">00:00</span></div>
+      <div class="hud-block selected-wrap">🌿 Đang chọn: <span id="selectedPlantLabel">Không chọn</span></div>
+      <div class="hud-actions">
+        <button id="pauseBtn" class="ghost-btn">⏸️ Tạm dừng</button>
+        <button id="resetPlantsBtn" class="ghost-btn hidden">🔄 Chọn lại cây</button>
+      </div>
+    </header>
+
+    <section id="panelWrap">
+      <div class="panel-head">
+        <div>
+          <h2>Kho cây</h2>
+          <p>Chỉ những cây bạn chọn mới hiện trong trận. Cây chưa đủ mặt trời sẽ mờ đi.</p>
+        </div>
+        <button id="noSelectBtn" class="no-select-btn">✋ Bỏ chọn cây</button>
+      </div>
+      <div id="shop"></div>
+    </section>
+
+    <main id="gameArea">
+      <div id="game"></div>
+      <div id="messageBanner" class="hidden"></div>
+    </main>
+  </div>
+
+  <audio id="shootSound" preload="auto" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
+  <audio id="boomSound" preload="auto" src="https://actions.google.com/sounds/v1/explosions/explosion.ogg"></audio>
+  <audio id="dieSound" preload="auto" src="https://actions.google.com/sounds/v1/cartoon/pop.ogg"></audio>
+  <audio id="garlicSound" preload="auto" src="https://actions.google.com/sounds/v1/cartoon/slide_whistle.ogg"></audio>
+  <audio id="throwSound" preload="auto" src="https://actions.google.com/sounds/v1/cartoon/boing.ogg"></audio>
+  <audio id="bounceSound" preload="auto" src="https://actions.google.com/sounds/v1/cartoon/cartoon_bounce.ogg"></audio>
+  <audio id="hellfireSound" preload="auto" src="https://actions.google.com/sounds/v1/fire/fire_large.ogg"></audio>
+
+  <script>
+    window.selectedPlants = new Set();
+
+    const GAME_SETTINGS = {
+      rows: 5,
+      cols: 20,
+      cellWidth: 70,
+      cellHeight: 90,
+      startingSun: 100,
+      attackInterval: 1000,
+      projectileSpeed: 6,
+      enemyProjectileSpeed: 5,
+      tickClamp: 0.05,
+    };
+
+    const PLANT_ORDER = [
+      "sunflower", "bigsun", "pea", "peaice", "pea2", "wallnut", "cherry", "azami", "shovel",
+      "cay10", "cay11", "cay12", "cay13", "cay14", "cay15", "cay16", "cay17", "cay18", "cay19"
+    ];
+
+    const PLANT_CONFIG = {
+      plants: {
+        sunflower: {
+          name: "Hướng dương",
+          role: "Kinh tế đầu game",
+          cost: 50,
+          hp: 20,
+          image: "cay1.png",
+          width: 60,
+          height: 60,
+          description: "Nguồn kinh tế cơ bản. Mỗi 5 giây tạo 25 mặt trời, rất quan trọng để mở đầu trận đấu.",
+          tips: ["Ưu tiên trồng sớm ở hàng an toàn.", "Rẻ nhưng cực quan trọng cho nhịp snowball tài nguyên."],
+          action: { type: "sunProducer", interval: 5000, amount: 25 }
+        },
+        bigsun: {
+          name: "Hướng dương to",
+          role: "Kinh tế tăng tốc",
+          cost: 500,
+          hp: 25,
+          image: "cay2.png",
+          width: 65,
+          height: 65,
+          description: "Phiên bản cao cấp của Hướng dương. Tạo 10 mặt trời mỗi giây, cực mạnh nếu sống lâu.",
+          tips: ["Đắt, nên chỉ trồng khi hàng thủ đã ổn.", "Hiệu quả nhất ở giữa và cuối game."],
+          action: { type: "sunProducer", interval: 1000, amount: 10 }
+        },
+        pea: {
+          name: "Pea",
+          role: "Sát thương cơ bản",
+          cost: 100,
+          hp: 15,
+          image: "cay3.png",
+          width: 60,
+          height: 60,
+          description: "Xạ thủ mặc định. Bắn 1 viên mỗi 1.5 giây, mỗi viên gây 2 sát thương.",
+          tips: ["Rẻ, dễ xếp đội hình.", "Phối hợp tốt với cây tăng cường đạn."],
+          action: { type: "shooter", interval: 1500, bullet: { style: "yellow", power: 2, count: 1 } }
+        },
+        peaice: {
+          name: "Pea băng",
+          role: "Khống chế cơ bản",
+          cost: 175,
+          hp: 15,
+          image: "cay4.png",
+          width: 60,
+          height: 60,
+          description: "Bắn đạn băng gây 1 sát thương và làm chậm mục tiêu trong thời gian ngắn.",
+          tips: ["Hiệu quả khi đặt chung hàng với sát thương mạnh.", "Càng nhiều đòn băng, zombie càng khó áp sát."],
+          action: { type: "shooter", interval: 2000, bullet: { style: "blue", power: 1, count: 1, freeze: true } }
+        },
+        pea2: {
+          name: "Pea 2 đầu",
+          role: "DPS ổn định",
+          cost: 200,
+          hp: 15,
+          image: "cay5.png",
+          width: 65,
+          height: 60,
+          description: "Mỗi đợt bắn ra 2 viên, mỗi viên gây 2 sát thương. Tốc độ bắn 2 giây/lần.",
+          tips: ["Mạnh hơn Pea khi cần giữ một hàng lâu dài.", "Rất hợp với buff sát thương từ cây 12 hoặc 19."],
+          action: { type: "shooter", interval: 2000, bullet: { style: "green", power: 2, count: 2 } }
+        },
+        wallnut: {
+          name: "Óc chó",
+          role: "Chắn cơ bản",
+          cost: 15,
+          hp: 500,
+          image: "cay6.png",
+          width: 70,
+          height: 70,
+          description: "Tường thịt giá rẻ. Máu dày, nhiệm vụ chính là cản đường và câu thời gian.",
+          tips: ["Giá cực rẻ, có thể dùng để vá khẩn cấp.", "Nên đặt trước các cây kinh tế hoặc xạ thủ."],
+          action: { type: "none" }
+        },
+        cherry: {
+          name: "Cherry",
+          role: "Nổ dọn hàng",
+          cost: 250,
+          hp: 10,
+          image: "cay7.png",
+          width: 60,
+          height: 60,
+          description: "Sau 1.5 giây sẽ tự nổ, gây 1000 sát thương trong vùng 1.5 ô quanh nó.",
+          tips: ["Dùng để cứu hàng đang vỡ.", "Không nên đặt sớm vì nổ xong là biến mất."],
+          action: { type: "exploder", delay: 1500, damage: 1000, range: 1.5 }
+        },
+        azami: {
+          name: "Azami",
+          role: "Xạ thủ cao cấp",
+          cost: 1000,
+          hp: 50,
+          image: "cay8.png",
+          width: 60,
+          height: 60,
+          description: "Bắn nhanh, mỗi phát gây 10 sát thương và đẩy lùi zombie. Mỗi phát tốn thêm 25 mặt trời.",
+          tips: ["Chỉ nên dùng khi nền kinh tế đủ dày.", "Mỗi hàng chỉ được đặt 1 cây."],
+          action: { type: "shooter", interval: 700, cost: 25, bullet: { style: "az", power: 10, count: 1, knock: true } },
+          limitPerRow: 1
+        },
+        shovel: {
+          name: "Xẻng",
+          role: "Công cụ",
+          cost: 0,
+          hp: 0,
+          image: "cay9.png",
+          width: 50,
+          height: 50,
+          description: "Dùng để đào cây đã trồng và hoàn lại 50% giá gốc của cây đó.",
+          tips: ["Không tốn slot chọn cây.", "Rất hữu ích để tái cấu trúc đội hình giữa trận."],
+          action: { type: "tool" }
+        },
+        cay10: {
+          name: "Cây siêu bắn",
+          role: "Đòn nặng theo chu kỳ",
+          cost: 1500,
+          hp: 90,
+          image: "cay10.png",
+          width: 90,
+          height: 70,
+          description: "Mỗi 4 giây bắn 1 viên đạn mạnh gây 30 sát thương.",
+          tips: ["Mỗi hàng chỉ được đặt 1 cây.", "Hợp để kết liễu mục tiêu máu dày."],
+          action: { type: "shooter", interval: 4000, bullet: { style: "red", power: 30, count: 1 } },
+          limitPerRow: 1
+        },
+        cay11: {
+          name: "Cây phản đạn",
+          role: "Phòng thủ chống bắn xa",
+          cost: 5000,
+          hp: 10,
+          maxHp: 10,
+          image: "cay11.png",
+          width: 60,
+          height: 60,
+          description: "Chuyên khắc chế zombie bắn đạn. Mỗi lần phản đạn sẽ mất 1 máu.",
+          tips: ["Dùng để đối phó Quỷ đỏ I, Quỷ đỏ II và quái bắn tầm xa.", "Máu thấp nên cần có chắn phụ phía trước."],
+          action: { type: "reflector" }
+        },
+        cay12: {
+          name: "Cây tăng cường đạn",
+          role: "Hỗ trợ DPS",
+          cost: 5000,
+          hp: 50,
+          image: "cay12.png",
+          width: 60,
+          height: 60,
+          description: "Tăng 50% sát thương cho các cây bắn ở 8 ô xung quanh.",
+          tips: ["Không tự tấn công, chỉ dùng để buff.", "Đặt giữa cụm xạ thủ để tối đa hiệu quả."],
+          action: { type: "enhancer", radius: 1, multiplier: 1.5 }
+        },
+        cay13: {
+          name: "Hắc diệp thạch",
+          role: "Tanker tự hồi phục",
+          cost: 10000,
+          hp: 1700,
+          maxHp: 1700,
+          image: "cay13.png",
+          width: 70,
+          height: 70,
+          description: "Khối chặn đường cực bền. Tự hồi 30 máu mỗi giây.",
+          tips: ["Thích hợp neo giữ hàng trước các xạ thủ đắt tiền.", "Càng được bảo kê lâu càng lời."],
+          action: { type: "blocker", healPerSecond: 30 }
+        },
+        cay14: {
+          name: "Óc chó siêu khuyển",
+          role: "Tank aura",
+          cost: 25000,
+          hp: 8000,
+          maxHp: 8000,
+          image: "cay14.png",
+          width: 80,
+          height: 80,
+          description: "Giảm 50% sát thương nhận vào, mỗi 3 giây phát xung gây 100 sát thương trong vùng 1 ô và nhận hồi máu gấp đôi.",
+          tips: ["Đắt nhưng giữ lane rất khỏe.", "Đặt ở hàng nhiều áp lực để tạo vùng dọn quái."],
+          action: { type: "areaHealer", interval: 3000, damage: 100, range: 1, healMultiplier: 2, damageReduction: 0.5 }
+        },
+        cay15: {
+          name: "Đại bác địa ngục",
+          role: "DPS/đẩy lùi liên tục",
+          cost: 20000,
+          hp: 600,
+          image: "cay15.png",
+          width: 70,
+          height: 70,
+          description: "Bắn liên tục mỗi 0.8 giây, mỗi phát gây 10 sát thương và đẩy lùi nhẹ.",
+          tips: ["Rất mạnh khi đi cùng hiệu ứng làm chậm.", "Nên đặt phía sau các cây chắn."],
+          action: { type: "hellCannon", interval: 800, bullet: { style: "hell-cannon", power: 10, count: 1, knock: true } }
+        },
+        cay16: {
+          name: "Mìn hắc diệp thạch",
+          role: "Hỗ trợ toàn bản đồ",
+          cost: 1500,
+          hp: 3000,
+          maxHp: 3000,
+          image: "cay16.png",
+          width: 60,
+          height: 60,
+          description: "Hồi 1 máu/giây cho toàn bộ cây đồng minh. Mỗi lần bị đánh sẽ nổ sóng phản kích, gây 30 sát thương toàn sân cho zombie.",
+          tips: ["Càng để sống lâu càng lợi.", "Đặt ở hàng ít nguy hiểm để duy trì aura hồi máu."],
+          action: { type: "mine", healPerSecond: 1, explosionDamage: 30, explosionOnHit: true }
+        },
+        cay17: {
+          name: "Tỏi biến dị",
+          role: "Khống chế hàng ngắn",
+          cost: 2000,
+          hp: 80,
+          image: "cay17.png",
+          width: 60,
+          height: 60,
+          description: "Bắn trong tầm 2 ô, mỗi phát gây 10 sát thương và đẩy lùi 0.5 ô. Khi bị cắn sẽ đẩy zombie sang hàng khác và làm chậm 80% trong 5 giây.",
+          tips: ["Rất hợp để phá nhịp áp sát của quái mạnh.", "Đặt gần tuyến đầu để lấy giá trị từ nội tại phòng thủ."],
+          action: {
+            type: "garlic",
+            interval: 2000,
+            bullet: { style: "garlic-bullet", power: 10, count: 1, knock: true, knockDistance: 0.5, range: 2 },
+            defenseEffect: { slowAmount: 0.8, slowDuration: 5000 }
+          }
+        },
+        cay18: {
+          name: "Tỏi biến dị ném đạn",
+          role: "Khống chế tích lũy / nảy đạn",
+          cost: 50000,
+          hp: 80,
+          maxHp: 80,
+          image: "cay18.png",
+          width: 65,
+          height: 65,
+          description: "Ném 1 quả đạn cầu vồng gây 80 sát thương, sau đó nảy thêm tối đa 3 lần, mỗi lần 20 sát thương. Mỗi lần trúng sẽ tích lũy giảm tốc vĩnh viễn. Khi bị đánh, zombie gây sát thương sẽ gần như bị đóng băng trong 10 giây.",
+          tips: ["Đắt nhưng rất mạnh ở late game.", "Hiệu quả nhất khi quái đi thành cụm."],
+          action: {
+            type: "thrower",
+            interval: 3000,
+            bullet: { style: "throw", mainDamage: 80, bounceDamage: 20, bounceCount: 3, slowAmount: 0.3, maxSlow: 0.9, throwHeight: 60 },
+            defenseEffect: { extremeSlowAmount: 0.99, extremeSlowDuration: 10000 }
+          }
+        },
+        cay19: {
+          name: "Óc chó địa ngục sinh đôi",
+          role: "Tank huyền thoại / buff toàn đội",
+          cost: 0,
+          baseCost: 0,
+          hp: 30000,
+          maxHp: 30000,
+          image: "cay19.png",
+          width: 85,
+          height: 85,
+          description: "Chỉ mở khóa sau khi hạ 1 Sứ giả khe nứt. Giảm 80% sát thương nhận vào, mỗi lần bị đánh tự hồi 100 máu và tăng 500 sát thương cho đạn đồng minh khi còn sống. Giá mua tăng thêm 3000 sau mỗi lần đặt.",
+          tips: ["Đây là cây xoay chuyển late game.", "Chỉ cần 1 cây sống đủ lâu là toàn đội tăng lực cực mạnh."],
+          action: { type: "hellfireWalnut", damageReduction: 0.8, healOnHit: 100, bulletEnhanceDamage: 500, manaPerSecond: 25, sunPerMana: 300, blocksZombies: true }
+        }
+      }
+    };
+
+    const ZOMBIE_CONFIG = {
+      zombies: {
+        normal: { name: "Thây ma thường", baseHp: 44, speed: 0.45, attackDamage: 2, sunReward: 25, scoreReward: 1 },
+        red: { name: "Thây ma đỏ", baseHp: 62, speed: 0.32, attackDamage: 3, hpBonusPerKill: 5, sunReward: 25, scoreReward: 1 },
+        big: { name: "Thây ma to", baseHp: 90, speed: 0.16, attackDamage: 5, sunReward: 25, scoreReward: 1 },
+        smart: { name: "Thây ma thông minh", baseHp: 90, speed: 0.5, attackDamage: 3, sunReward: 25, scoreReward: 1 },
+        purple: { name: "Boss", baseHp: 500, speed: 0.08, attackDamage: 10, sunReward: 50, scoreReward: 10 },
+        thayma2: { name: "Thây ma 2 - Đi xuyên qua cây", baseHp: 100, speed: 0.58, attackDamage: 0, canAttack: false, passThroughPlants: true, sunReward: 50, scoreReward: 3 },
+        thayma3: { name: "Thây ma 3 - Chặn đường", baseHp: 3000, speed: 0.4, attackDamage: 0, canAttack: false, stopsAtPlant: true, sunReward: 75, scoreReward: 5 },
+        thayma4: { name: "Thây ma 4 - Bom nổ", baseHp: 500, speed: 0.1, attackDamage: 999, explosionOnDeath: true, explosionRange: 1.5, sunReward: 100, scoreReward: 10 },
+        thayma5: { name: "Thây ma 5 - Chiến binh bất khả chiến bại", baseHp: 8000, speed: 0.65, attackDamage: 5, immuneToControl: true, immuneToKnockback: true, sunReward: 150, scoreReward: 15 },
+        thayma6: { name: "Thây ma 6 - Quái vật tối thượng", baseHp: 5000000, speed: 0.32, attackDamage: 0, canAttack: false, immuneToControl: true, immuneToKnockback: true, immuneToExplosion: true, stopsAtDistance: 2, rangedAttack: true, rangedDamage: 200, rangedInterval: 5000, sunReward: 1000, scoreReward: 100, winOnKill: true },
+        thayma7: { name: "Sứ giả khe nứt", baseHp: 60000, speed: 0.5, attackDamage: 999, attackInterval: 3000, knockbackOnHit: true, knockbackDistance: 1, sunReward: 500, scoreReward: 50 },
+        thayma8: { name: "Baron Nashor", baseHp: 100000, speed: 0.55, attackDamage: 0, canAttack: false, stopsAtDistance: 2, immuneToControl: true, immuneToKnockback: true, immuneToExplosion: true, buffsThayma7: true, buffSpeedAmount: 1.0, buffAttackSpeedAmount: 1.0, spawnsThayma7OnDeath: true, spawnedThayma7Hp: 300000, spawnOnAppearance: true, sunReward: 1000, scoreReward: 200 },
+        thayma9: { name: "Quỷ đỏ I", baseHp: 2000, speed: 0.75, attackDamage: 10, canShoot: true, shootInterval: 500, shootDamage: 30, sunReward: 200, scoreReward: 20 },
+        thayma10: { name: "Quỷ đỏ II", baseHp: 50000, speed: 0.95, attackDamage: 15, canShoot: true, shootInterval: 400, shootDamage: 100, immuneToControl: true, sunReward: 300, scoreReward: 30 }
+      }
+    };
+  </script>
+
+  <script src="plant-selection.js"></script>
+  <script src="game-main.js"></script>
+</body>
+</html>

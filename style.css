@@ -1,1270 +1,1153 @@
-/* style.css */
-body { 
-  background:#9be29b; 
-  font-family:sans-serif; 
-  user-select:none; 
+:root {
+  --bg: #10261d;
+  --panel: #183629;
+  --panel-2: #214836;
+  --line: rgba(255,255,255,0.12);
+  --text: #f4fff2;
+  --accent: #ffd966;
+  --danger: #ff6b6b;
+  --good: #8ef2a8;
+  --muted: #b4d8c0;
+  --cell-w: 70px;
+  --cell-h: 90px;
 }
 
-h1{text-align:center;}
+* {
+  box-sizing: border-box;
+}
 
-/* Thêm overlay màn hình bắt đầu */
-#startScreen {
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top, rgba(90, 165, 116, 0.22), transparent 35%),
+    linear-gradient(180deg, #0e1e17 0%, #12271d 100%);
+  color: var(--text);
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  user-select: none;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+button {
+  font: inherit;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.8);
-  display: flex;
-  justify-content: center;
+  inset: 0;
+  display: none;
   align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(5, 12, 9, 0.72);
   z-index: 9999;
-  color: white;
-  text-align: center;
+  backdrop-filter: blur(6px);
 }
 
-#startContent {
-  background: #2a6e2a;
-  padding: 40px;
-  border-radius: 15px;
-  border: 5px solid gold;
-  max-width: 600px;
-}
-
-#startBtn {
-  font-size: 24px;
-  padding: 15px 40px;
-  background: gold;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  font-weight: bold;
-  margin-top: 20px;
-  transition: all 0.3s;
-}
-
-#startBtn:hover {
-  background: orange;
-  transform: scale(1.05);
-}
-
-/* Màn hình chọn cây */
-#plantSelectScreen {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.9);
+.overlay.visible {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 9998;
-  color: white;
+}
+
+.dialog {
+  position: relative;
+  width: min(940px, 100%);
+  max-height: 90vh;
+  overflow: auto;
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 24px;
+  padding: 24px;
+  background: linear-gradient(180deg, rgba(29, 64, 47, 0.96), rgba(19, 41, 31, 0.98));
+  box-shadow: 0 30px 80px rgba(0,0,0,0.35);
+}
+
+.start-dialog,
+.small-dialog {
+  width: min(720px, 100%);
   text-align: center;
 }
 
-#plantSelectContent {
-  background: #2a6e2a;
-  padding: 30px;
-  border-radius: 15px;
-  border: 5px solid gold;
-  max-width: 1200px;
-  max-height: 80vh;
-  overflow-y: auto;
+.wide-dialog {
+  width: min(1180px, 100%);
 }
 
-#plantSelectionGrid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 15px;
-  margin: 20px 0;
-  padding: 10px;
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 10px;
-  max-height: 50vh;
-  overflow-y: auto;
+.detail-dialog {
+  width: min(780px, 100%);
 }
 
-.plant-select-item {
-  background: #4a9a4a;
-  border: 3px solid transparent;
-  border-radius: 10px;
-  padding: 10px;
+.lead {
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.intro-list {
+  display: inline-block;
+  margin: 16px auto 24px;
+  text-align: left;
+  color: var(--muted);
+  line-height: 1.8;
+}
+
+.primary-btn,
+.ghost-btn,
+.no-select-btn,
+.shop-card,
+.close-btn {
+  border: none;
+  border-radius: 16px;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: transform 0.18s ease, filter 0.18s ease, box-shadow 0.18s ease;
+}
+
+.primary-btn:hover,
+.ghost-btn:hover,
+.no-select-btn:hover,
+.shop-card:hover,
+.close-btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+}
+
+.primary-btn {
+  padding: 14px 22px;
+  background: linear-gradient(135deg, #f8e580, #f6b844);
+  color: #1f2200;
+  font-weight: 800;
+  box-shadow: 0 14px 28px rgba(246, 184, 68, 0.24);
+}
+
+.primary-btn:disabled {
+  background: #6e7f75;
+  color: rgba(255,255,255,0.8);
+  box-shadow: none;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.ghost-btn,
+.no-select-btn {
+  padding: 12px 18px;
+  background: rgba(255,255,255,0.08);
+  color: var(--text);
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.close-btn {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  width: 42px;
+  height: 42px;
+  background: rgba(255,255,255,0.08);
+  color: white;
+}
+
+#appShell {
+  padding: 16px 16px 26px;
+}
+
+#hud {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) auto;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.hud-block,
+.hud-actions {
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 14px 16px;
+  background: linear-gradient(180deg, rgba(36, 73, 55, 0.88), rgba(23, 49, 37, 0.92));
+}
+
+.hud-block {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+}
+
+.selected-wrap {
+  flex-wrap: wrap;
+}
+
+.hud-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+#panelWrap {
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  padding: 16px;
+  margin-bottom: 16px;
+  background: linear-gradient(180deg, rgba(27, 55, 42, 0.88), rgba(20, 42, 31, 0.92));
+}
+
+.panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.panel-head h2 {
+  margin: 0 0 6px;
+}
+
+.panel-head p {
+  margin: 0;
+  color: var(--muted);
+}
+
+#shop {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
+}
+
+.shop-card {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  min-height: 150px;
-}
-
-.plant-select-item:hover {
-  background: #5aaa5a;
-  transform: translateY(-5px);
-}
-
-.plant-select-item.selected {
-  border-color: gold;
-  background: #3a8a3a;
-  box-shadow: 0 0 15px gold;
-}
-
-.plant-select-item.disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  filter: grayscale(100%);
-}
-
-.plant-select-item img {
-  width: 60px;
-  height: 60px;
-  object-fit: cover;
-  margin-bottom: 10px;
-}
-
-.plant-select-info {
-  font-size: 12px;
-  margin-top: 5px;
+  gap: 8px;
+  min-height: 136px;
+  padding: 12px 10px 10px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.09), rgba(255,255,255,0.04));
+  border: 1px solid rgba(255,255,255,0.08);
+  color: var(--text);
   text-align: center;
 }
 
-.plant-select-info .plant-name {
-  font-weight: bold;
-  margin-bottom: 3px;
-  color: #fff;
+.shop-card .thumb {
+  width: 58px;
+  height: 58px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  background: rgba(255,255,255,0.08);
+  overflow: hidden;
 }
 
-.plant-select-info .plant-cost {
-  color: gold;
-  font-size: 11px;
+.shop-card .name {
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.3;
 }
 
-#confirmPlantsBtn {
-  font-size: 20px;
-  padding: 15px 40px;
-  background: gold;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  font-weight: bold;
-  margin-top: 20px;
-  transition: all 0.3s;
+.shop-card .meta {
+  font-size: 12px;
+  color: var(--muted);
 }
 
-#confirmPlantsBtn:hover:not(:disabled) {
-  background: orange;
-  transform: scale(1.05);
-}
-
-#confirmPlantsBtn:disabled {
-  background: gray;
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
-#selectedCount {
-  font-size: 18px;
-  margin: 15px 0;
-  font-weight: bold;
-}
-
-/* Màn hình tạm dừng */
-#pauseScreen {
+.shop-card .badge {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: rgba(0, 0, 0, 0.8);
-  color: white;
-  padding: 20px 40px;
-  border-radius: 10px;
-  font-size: 32px;
-  font-weight: bold;
-  z-index: 9998;
-  display: none;
+  top: 8px;
+  right: 8px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(0,0,0,0.28);
+  font-size: 11px;
+  color: var(--accent);
 }
 
-/* =============== SÂN CHƠI =============== */
+.shop-card.selected {
+  outline: 2px solid var(--accent);
+  box-shadow: 0 0 0 4px rgba(255, 217, 102, 0.12);
+}
+
+.shop-card.disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+}
+
+.shop-card.locked {
+  opacity: 0.55;
+  border-color: rgba(255, 107, 107, 0.3);
+}
+
+#gameArea {
+  position: relative;
+  overflow-x: auto;
+}
+
 #game {
   position: relative;
-  width: 1400px; /* 20 cột * 70px */
-  height: 535px; /* 5 hàng * 90px + đường viền */
-  margin: 10px auto;
-  background: 
-    /* Nền chính với các ô xen kẽ */
-    linear-gradient(90deg, 
-      #7fcf7f 0px, #7fcf7f 70px, 
-      #72c272 70px, #72c272 140px
-    ) repeat-x,
-    linear-gradient(0deg, 
-      #7fcf7f 0px, #7fcf7f 90px, 
-      #5ab35a 90px, #5ab35a 180px
-    ) repeat-y,
-    /* Màu nền cơ bản */
-    #7fcf7f;
-  background-size: 140px 180px;
-  border: 4px solid #2a6e2a;
+  width: calc(var(--cell-w) * 20);
+  height: calc(var(--cell-h) * 5);
+  margin: 0 auto;
+  border-radius: 28px;
   overflow: hidden;
+  border: 2px solid rgba(255,255,255,0.16);
+  background:
+    linear-gradient(180deg, rgba(54, 101, 64, 0.94), rgba(39, 84, 49, 0.96)),
+    repeating-linear-gradient(90deg, rgba(255,255,255,0.05) 0 1px, transparent 1px calc(var(--cell-w))),
+    repeating-linear-gradient(180deg, rgba(255,255,255,0.08) 0 1px, transparent 1px calc(var(--cell-h)));
+  box-shadow: inset 0 0 0 9999px rgba(255,255,255,0.02), 0 24px 50px rgba(0,0,0,0.18);
 }
 
-/* Đường kẻ phân biệt hàng và cột */
-#game::before {
-  content: "";
+.grid-cell {
   position: absolute;
-  top: 0;
-  left: 0;
+  border-right: 1px solid rgba(255,255,255,0.05);
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+
+.grid-cell:nth-child(odd) {
+  background: rgba(255,255,255,0.018);
+}
+
+#messageBanner {
+  position: sticky;
+  top: 10px;
+  z-index: 30;
+  width: fit-content;
+  margin: 12px auto 0;
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: rgba(0,0,0,0.48);
+  border: 1px solid rgba(255,255,255,0.14);
+  font-weight: 700;
+}
+
+.entity {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  will-change: left, top, transform;
+}
+
+.plant,
+.zombie {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.plant img,
+.zombie img {
   width: 100%;
   height: 100%;
-  background-image: 
-    /* Đường kẻ cột (dọc) */
-    linear-gradient(90deg, 
-      transparent 69px, 
-      rgba(255, 255, 255, 0.3) 70px,
-      transparent 71px
-    ),
-    /* Đường kẻ hàng (ngang) */
-    linear-gradient(0deg, 
-      transparent 89px, 
-      rgba(255, 255, 255, 0.3) 90px,
-      transparent 91px
-    );
-  background-size: 70px 90px;
+  object-fit: contain;
   pointer-events: none;
-  z-index: 1;
 }
 
-/* Đường viền dày hơn cho hàng đầu và cột đầu */
-#game::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
+.fallback-face {
   width: 100%;
   height: 100%;
-  background-image: 
-    /* Đường kẻ cột đầu (dọc) đậm hơn */
-    linear-gradient(90deg, 
-      rgba(0, 0, 0, 0.2) 0px, 
-      rgba(0, 0, 0, 0.2) 2px,
-      transparent 3px
-    ),
-    /* Đường kẻ hàng đầu (ngang) đậm hơn */
-    linear-gradient(0deg, 
-      rgba(0, 0, 0, 0.2) 0px, 
-      rgba(0, 0, 0, 0.2) 2px,
-      transparent 3px
-    );
-  pointer-events: none;
-  z-index: 2;
+  display: grid;
+  place-items: center;
+  border-radius: 18px;
+  font-size: 28px;
+  font-weight: 800;
+  color: white;
 }
 
-/* Hiệu ứng hover cho các ô */
-.cell-hover {
-  position: absolute;
-  width: 70px;
-  height: 90px;
-  background-color: rgba(255, 255, 255, 0.1);
-  border: 2px dashed rgba(255, 255, 255, 0.5);
-  box-sizing: border-box;
-  display: none;
-  pointer-events: none;
-  z-index: 3;
-}
-
-/* Các ô lưới */
-.cell {
-  position: absolute;
-  width: 70px;
-  height: 90px;
-  box-sizing: border-box;
-  background-color: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: background-color 0.3s;
-}
-
-/* Màu xen kẽ cho các ô */
-.cell:nth-child(odd) {
-  background-color: rgba(122, 199, 122, 0.3);
-}
-
-.cell:nth-child(even) {
-  background-color: rgba(106, 186, 106, 0.3);
-}
-
-/* Hiệu ứng khi có cây */
-.cell.has-plant {
-  background-color: rgba(255, 255, 255, 0.15);
-  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
-}
-
-/* Hiệu ứng khi có zombie */
-.cell.has-zombie {
-  background-color: rgba(255, 0, 0, 0.1);
-  box-shadow: inset 0 0 10px rgba(255, 0, 0, 0.3);
-}
-
-/* Hiệu ứng ô được chọn để trồng cây */
-.cell.plantable {
-  background-color: rgba(255, 255, 255, 0.3) !important;
-  border: 2px dashed gold;
-  box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
-}
-
-/* Hiệu ứng ô được chọn trong shop */
-.cell.selected-for-plant {
-  background-color: rgba(255, 215, 0, 0.3);
-  border: 2px solid gold;
-  box-shadow: 0 0 15px gold;
-}
-
-/* Chỉ số hàng và cột */
-.row-label, .col-label {
-  position: absolute;
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 12px;
-  font-weight: bold;
-  z-index: 2;
-  pointer-events: none;
-}
-
-.row-label {
-  left: -25px;
-  text-align: right;
-  width: 20px;
-}
-
-.col-label {
-  top: -20px;
-  text-align: center;
-  width: 70px;
-}
-
-/* Phần còn lại của CSS giữ nguyên */
-
-.plant,.zombie,.bullet{position:absolute;transform:translate(-50%,-50%);text-align:center;font-weight:bold;font-size:12px;}
-.zombie{width:60px;height:80px;background:gray;border:2px solid black;color:white;}
-.zombie.red{background:red;}
-.zombie.big{width:80px;height:100px;background:darkgray;}
-.zombie.purple{width:180px;height:180px;background:purple;font-size:18px;border:3px solid black;}
-.zombie.smart{background:url('thayma.png') center/cover no-repeat;}
-.zombie.thayma2{background:url('thayma2.png') center/cover no-repeat;}
-.zombie.thayma3{background:url('thayma3.png') center/cover no-repeat;}
-.zombie.thayma4{background:url('thayma4.png') center/cover no-repeat;}
-.zombie.thayma5{background:url('thayma5.png') center/cover no-repeat;}
-.zombie.thayma6{background:url('thayma6.png') center/cover no-repeat; width:100px;height:120px;z-index:1000;}
-
-/* THÊM: CSS cho thây ma 7 - Sứ giả khe nứt */
-.zombie.thayma7 {
-  background: url('thayma7.png') center/cover no-repeat;
-  width: 70px;
-  height: 90px;
-  border: 3px solid #ff0000;
-}
-
-/* THÊM: CSS cho thây ma 8 - Baron Nashor */
-.zombie.thayma8 {
-  background: url('thayma8.png') center/cover no-repeat;
-  width: 100px;
-  height: 120px;
-  border: 3px solid #8B0000;
-  z-index: 1001;
-}
-
-.bullet{width:10px;height:10px;background:yellow;border-radius:50%;}
-.bullet.green{background:lime;}
-.bullet.blue{background:cyan;}
-.bullet.az{background:orange;}
-.bullet.purple-bullet{background:purple;width:15px;height:15px;}
-
-/* Đạn to màu đỏ của boss */
-.bullet.red-boss-bullet{
-  background:red;
-  width:40px;
-  height:40px;
-  border-radius:0%;
-  border:3px solid darkred;
-  z-index: 900;
-}
-
-/* Đạn được tăng cường bởi cay12 */
-.bullet.enhanced{
-  border:2px solid gold;
-  transition: all 0.1s;
-}
-
-/* Đạn của đại bác địa ngục */
-.bullet.hell-cannon{
-  background:purple;
-  width:20px;
-  height:20px;
-  border:2px solid black;
-}
-
-/* Đạn của tỏi biến dị */
-.bullet.garlic-bullet{
-  background: #ff66b2;
-  width: 12px;
-  height: 12px;
-  border: 1px solid #cc0066;
-  box-shadow: 0 0 5px #ff3399;
-}
-
-/* Đạn của cay18 - đạn ném */
-.bullet.cay18-bullet {
-  background: url('dancay18.png') center/cover no-repeat;
-  width: 25px;
-  height: 25px;
-  border-radius: 50%;
-  border: 2px solid #8B0000;
-  box-shadow: 0 0 10px #FF4500;
-  z-index: 950;
-}
-
-/* Đạn được tăng cường bởi cay19 */
-.bullet.hellfire-enhanced {
-  background: #FF4500 !important;
-  box-shadow: 0 0 15px #FF0000, 0 0 25px #FF8C00 !important;
-  border: 2px solid #FFD700 !important;
-  animation: hellfirePulse 0.5s infinite alternate;
-  transform: scale(1.2);
-  z-index: 1000;
-}
-
-@keyframes hellfirePulse {
-  0% { box-shadow: 0 0 15px #FF0000, 0 0 25px #FF8C00; }
-  100% { box-shadow: 0 0 20px #FF0000, 0 0 30px #FF4500; }
-}
-
-#panel{
-  text-align:center;
-  margin:10px;
-  padding: 10px;
-  background: rgba(42, 110, 42, 0.9);
-  border-radius: 10px;
-  border: 2px solid #2a6e2a;
-}
-button{margin:2px 4px;padding:5px 10px;cursor:pointer;}
-
-#scoreBoard{
-  position:absolute;
-  bottom:5px;
-  right:15px;
-  background:rgba(255,255,255,0.6);
-  padding:5px 10px;
-  border-radius:8px;
-  font-weight:bold;
-  z-index: 10;
-}
-
-/* Cập nhật shop */
-.shop-item {
-  width: 30px;
-  height: 35px;
-  margin: 5px;
-  display: inline-block;
-  text-align: center;
-  cursor: pointer;
+.plant-shell,
+.zombie-shell {
   position: relative;
-  border: 1px solid #2a6e2a;
-  border-radius: 5px;
-  background: #5ab35a;
-  transition: all 0.2s;
+  overflow: visible;
 }
 
-.shop-item:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 5px 10px rgba(0,0,0,0.2);
-}
-
-.shop-item img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover; /* Đảm bảo ảnh không bị méo */
-  border-radius: 5px;
-}
-
-.shop-item[title]:hover::after {
-  content: attr(title);
+.hp-tag,
+.mana-tag,
+.zombie-name {
   position: absolute;
-  top: -20px;
   left: 50%;
   transform: translateX(-50%);
-  padding: 3px 6px;
-  background-color: rgba(0, 0, 0, 0.7);
-  color: white;
-  font-size: 12px;
-  border-radius: 5px;
   white-space: nowrap;
-  z-index: 1000;
+  font-size: 12px;
+  font-weight: 700;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.8);
 }
 
-.shop-item.disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  filter: grayscale(100%);
+.hp-tag {
+  top: -20px;
 }
 
-/* Cây - CẤU HÌNH CHUNG */
-.plant {
-  width: var(--plant-width, 60px);
-  height: var(--plant-height, 60px);
-  margin: 0;
-  position: absolute;
-  z-index: 100;
-}
-
-/* Thanh mana */
 .mana-bar {
   position: absolute;
-  bottom: -8px;
-  left: 0;
-  width: var(--plant-width, 60px);
-  height: 5px;
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 2px;
+  left: 50%;
+  bottom: -10px;
+  width: 64px;
+  height: 6px;
+  transform: translateX(-50%);
+  border-radius: 999px;
   overflow: hidden;
+  background: rgba(255,255,255,0.1);
 }
 
 .mana-fill {
   height: 100%;
-  width: 0%;  /* Mở rộng thanh mana */
-  background: linear-gradient(90deg, #00aaff, #0088ff);
-  transition: width 0.3s;
+  width: 0%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #77d8ff, #6f7bff);
 }
 
-/* Số máu */
-.hp-text {
+.projectile,
+.effect {
   position: absolute;
-  top: -15px;  /* Giảm khoảng cách để số máu gần đầu cây hơn */
-  left: 50%;   /* Căn giữa theo chiều ngang */
-  transform: translateX(-50%); /* Căn giữa hoàn hảo */
-  font-size: 14px;
-  color: #ff0000;  /* Màu đỏ cho số máu */
-  font-weight: bold;
-  text-shadow: 1px 1px 2px black;
-  z-index: 101;
-}
-
-/* Thêm vào phần CSS cho bullet */
-.bullet.red { background: red; }
-
-/* Hiệu ứng cho cây cay14 khi kích hoạt */
-.plant.cay14 {
-  transition: box-shadow 0.3s ease;
-  border: 2px solid gold;
-}
-
-/* Hiệu ứng cho cây cay16 khi bị tấn công */
-.plant.cay16.hit {
-  animation: mineFlash 0.5s;
-  box-shadow: 0 0 20px red;
-}
-
-@keyframes mineFlash {
-  0%, 100% { filter: brightness(1); }
-  50% { filter: brightness(1.5); }
-}
-
-/* Hiệu ứng cho cây cay17 khi bị tấn công */
-.plant.cay17.garlic-hit {
-  animation: garlicFlash 0.5s;
-  box-shadow: 0 0 15px purple;
-}
-
-@keyframes garlicFlash {
-  0%, 100% { 
-    filter: brightness(1) hue-rotate(0deg); 
-    transform: translate(-50%, -50%) scale(1);
-  }
-  50% { 
-    filter: brightness(1.3) hue-rotate(180deg); 
-    transform: translate(-50%, -50%) scale(1.1);
-  }
-}
-
-/* Hiệu ứng cho cây cay18 khi bị tấn công */
-.plant.cay18.hit {
-  animation: cay18Flash 0.5s;
-  box-shadow: 0 0 20px #FF4500;
-}
-
-@keyframes cay18Flash {
-  0%, 100% { 
-    filter: brightness(1) hue-rotate(0deg); 
-    transform: translate(-50%, -50%) scale(1);
-  }
-  50% { 
-    filter: brightness(1.5) hue-rotate(90deg); 
-    transform: translate(-50%, -50%) scale(1.2);
-  }
-}
-
-/* Hiệu ứng cho cây cay19 */
-.plant.cay19 {
-  border: 3px solid #8B0000;
-  box-shadow: 0 0 20px #FF4500;
-  animation: hellfireGlow 2s infinite alternate;
-}
-
-@keyframes hellfireGlow {
-  0% { box-shadow: 0 0 20px #FF4500, 0 0 30px #8B0000; }
-  100% { box-shadow: 0 0 25px #FF0000, 0 0 35px #FF8C00; }
-}
-
-.plant.cay19.hit {
-  animation: cay19Hit 0.5s;
-  box-shadow: 0 0 30px #00FF00;
-}
-
-@keyframes cay19Hit {
-  0%, 100% { 
-    filter: brightness(1); 
-    transform: translate(-50%, -50%) scale(1);
-  }
-  50% { 
-    filter: brightness(1.5); 
-    transform: translate(-50%, -50%) scale(1.1);
-  }
-}
-
-/* Hiệu ứng cho zombie khi bị tỏi tấn công */
-.zombie.garlic-effect {
-  border: 2px solid purple !important;
-  box-shadow: 0 0 10px purple;
-  animation: garlicZombie 5s linear;
-}
-
-@keyframes garlicZombie {
-  0% { border-color: purple; }
-  50% { border-color: #ff66ff; }
-  100% { border-color: purple; }
-}
-
-/* Hiệu ứng cho zombie khi bị cay18 tấn công */
-.zombie.cay18-slow {
-  border: 2px solid #FF4500 !important;
-  box-shadow: 0 0 15px #FF8C00;
-  filter: brightness(0.8) sepia(1) hue-rotate(-30deg);
-}
-
-/* Hiệu ứng cho zombie khi bị tấn công bởi cay14 */
-.zombie.hit-by-cay14 {
-  animation: hitFlash 0.5s;
-}
-
-@keyframes hitFlash {
-  0%, 100% { filter: brightness(1); }
-  50% { filter: brightness(1.5); }
-}
-
-/* Hiệu ứng hồi máu */
-.heal-effect {
-  position: absolute;
-  width: 60px;
-  height: 60px;
-  background: radial-gradient(circle, rgba(0,255,0,0.5) 0%, rgba(0,255,0,0) 70%);
-  border-radius: 50%;
-  animation: healPulse 1s ease-out;
+  transform: translate(-50%, -50%);
   pointer-events: none;
-  z-index: 500;
 }
 
-@keyframes healPulse {
-  0% { transform: scale(0.5); opacity: 1; }
-  100% { transform: scale(2); opacity: 0; }
-}
-
-/* Hiệu ứng mìn nổ */
-.mine-explosion-effect {
-  position: absolute;
-  width: 200px;
-  height: 200px;
-  background: radial-gradient(circle, rgba(255,0,0,0.7) 0%, rgba(255,0,0,0) 70%);
+.projectile.linear {
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
-  animation: explosionPulse 0.8s ease-out;
-  pointer-events: none;
-  z-index: 800;
+  box-shadow: 0 0 10px rgba(255,255,255,0.32);
 }
 
-@keyframes explosionPulse {
-  0% { transform: scale(0.1); opacity: 1; }
-  100% { transform: scale(1.5); opacity: 0; }
-}
-
-/* Hiệu ứng đạn tỏi */
-.garlic-bullet-trail {
-  position: absolute;
-  width: 8px;
-  height: 8px;
-  background: rgba(255, 102, 178, 0.5);
+.projectile.enemy {
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
-  pointer-events: none;
-  z-index: 400;
-  animation: garlicTrail 0.3s forwards;
+  background: radial-gradient(circle at 30% 30%, #ffc3c3, #ff5d5d 70%);
 }
 
-@keyframes garlicTrail {
-  0% { transform: scale(1); opacity: 1; }
-  100% { transform: scale(0); opacity: 0; }
-}
+.projectile.yellow { background: radial-gradient(circle at 30% 30%, #fff7b4, #ffc93b 75%); }
+.projectile.blue { background: radial-gradient(circle at 30% 30%, #dcf5ff, #5bc0ff 75%); }
+.projectile.green { background: radial-gradient(circle at 30% 30%, #dfffd8, #44d152 75%); }
+.projectile.red { background: radial-gradient(circle at 30% 30%, #ffd4c2, #ff6f3d 75%); }
+.projectile.az { background: radial-gradient(circle at 30% 30%, #ffe8ff, #f05eff 75%); }
+.projectile.garlic-bullet { background: radial-gradient(circle at 30% 30%, #fff0d7, #d1a15f 75%); }
+.projectile.hell-cannon { background: radial-gradient(circle at 30% 30%, #ffe6b8, #ff3d00 80%); box-shadow: 0 0 18px rgba(255, 61, 0, 0.4); }
+.projectile.throw,
+.projectile.bounce { width: 22px; height: 22px; border-radius: 50%; background: radial-gradient(circle at 30% 30%, #ffffff, #8f62ff 70%); box-shadow: 0 0 16px rgba(143, 98, 255, 0.5); }
+.projectile.enhanced { outline: 2px solid rgba(255, 217, 102, 0.75); }
+.projectile.hellfire { outline: 2px solid rgba(255, 90, 0, 0.75); }
 
-/* Hiệu ứng đạn ném cay18 */
-.cay18-throw-effect {
-  position: absolute;
-  width: 15px;
-  height: 15px;
-  background: radial-gradient(circle, rgba(255,69,0,0.7) 0%, rgba(255,69,0,0) 70%);
+.effect.flash,
+.effect.heal,
+.effect.boom,
+.effect.bounce-ring,
+.effect.status {
   border-radius: 50%;
-  pointer-events: none;
-  z-index: 400;
-  animation: cay18Throw 0.5s forwards;
+  animation: pop 0.45s ease-out forwards;
 }
 
-@keyframes cay18Throw {
-  0% { transform: scale(1); opacity: 1; }
-  100% { transform: scale(2); opacity: 0; }
+.effect.flash {
+  width: 48px;
+  height: 48px;
+  background: radial-gradient(circle, rgba(255,255,255,0.8), transparent 72%);
 }
 
-/* Hiệu ứng đạn nảy cay18 */
-.cay18-bounce-effect {
-  position: absolute;
-  width: 20px;
-  height: 20px;
-  background: radial-gradient(circle, rgba(255,140,0,0.8) 0%, rgba(255,140,0,0) 70%);
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 400;
-  animation: cay18Bounce 0.3s forwards;
+.effect.heal {
+  width: 36px;
+  height: 36px;
+  background: radial-gradient(circle, rgba(128,255,162,0.85), transparent 70%);
 }
 
-@keyframes cay18Bounce {
-  0% { transform: scale(0.5); opacity: 1; }
-  50% { transform: scale(1.2); opacity: 0.8; }
-  100% { transform: scale(1); opacity: 0; }
-}
-
-/* Hiệu ứng buff của Baron */
-.zombie.baron-buffed {
-  box-shadow: 0 0 15px #00FF00 !important;
-  filter: brightness(1.3) !important;
-}
-
-/* Hiệu ứng hồi máu cho cay19 */
-.hellfire-heal-effect {
-  position: absolute;
-  width: 100px;
-  height: 100px;
-  background: radial-gradient(circle, rgba(255,0,0,0.7) 0%, rgba(255,69,0,0.5) 30%, rgba(255,140,0,0) 70%);
-  border-radius: 50%;
-  animation: hellfireHeal 1.5s ease-out;
-  pointer-events: none;
-  z-index: 500;
-}
-
-@keyframes hellfireHeal {
-  0% { transform: scale(0.1); opacity: 1; }
-  100% { transform: scale(3); opacity: 0; }
-}
-
-/* Hiệu ứng highlight khi di chuột qua ô */
-.cell-highlight {
-  position: absolute;
-  width: 70px;
-  height: 90px;
-  background-color: rgba(255, 255, 255, 0.2);
-  border: 2px solid rgba(255, 255, 255, 0.5);
-  pointer-events: none;
-  z-index: 5;
-  display: none;
-}
-
-/* Lưới nền với màu xen kẽ */
-.game-grid {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  display: grid;
-  grid-template-columns: repeat(20, 70px); /* 20 cột */
-  grid-template-rows: repeat(5, 90px); /* 5 hàng */
-  z-index: 0;
-}
-
-.grid-cell {
-  border-right: 1px solid rgba(255, 255, 255, 0.3);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-  position: relative;
-}
-
-/* Màu xen kẽ cho các ô lưới */
-.grid-cell:nth-child(odd) {
-  background-color: rgba(122, 199, 122, 0.3);
-}
-
-.grid-cell:nth-child(even) {
-  background-color: rgba(106, 186, 106, 0.3);
-}
-
-/* Đường kẻ đậm hơn cho hàng đầu và cột đầu */
-.grid-cell:nth-child(-n+20) {
-  border-top: 2px solid rgba(0, 0, 0, 0.2);
-}
-
-.grid-cell:nth-child(20n+1) {
-  border-left: 2px solid rgba(0, 0, 0, 0.2);
-}
-
-/* Hiệu ứng cho ô được chọn để trồng cây */
-.grid-cell.plantable {
-  background-color: rgba(255, 255, 255, 0.3) !important;
-  border: 2px dashed gold !important;
-}
-
-/* Chỉ số hàng và cột */
-.grid-row-label {
-  position: absolute;
-  left: -25px;
-  color: rgba(255, 255, 255, 0.8);
-  font-weight: bold;
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 90px;
-  width: 25px;
-}
-
-.grid-col-label {
-  position: absolute;
-  top: -25px;
-  color: rgba(255, 255, 255, 0.8);
-  font-weight: bold;
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 25px;
-  width: 70px;
-}
-
-/* Hiệu ứng cho ô có thể trồng cây */
-.grid-cell.available {
-  background-color: rgba(255, 255, 255, 0.15) !important;
-  border: 1px solid rgba(255, 255, 255, 0.5) !important;
-}
-
-/* Hiệu ứng cho ô đã có cây */
-.grid-cell.occupied {
-  background-color: rgba(0, 255, 0, 0.1) !important;
-  border: 1px solid rgba(0, 255, 0, 0.3) !important;
-}
-
-/* Hiệu ứng cho ô có zombie */
-.grid-cell.has-zombie {
-  background-color: rgba(255, 0, 0, 0.1) !important;
-  border: 1px solid rgba(255, 0, 0, 0.3) !important;
-}
-
-/* Hiệu ứng hover cho ô */
-.grid-cell:hover {
-  background-color: rgba(255, 255, 255, 0.2) !important;
-}
-/* style.css - PHẦN THÊM CHO THÂY MA MỚI */
-
-/* CSS cho thây ma 9 - Quỷ đỏ I */
-.zombie.thayma9 {
-  background: url('thayma9.png') center/cover no-repeat;
-  width: 70px;
-  height: 90px;
-  border: 3px solid #FF4500;
-  box-shadow: 0 0 10px #FF4500;
-}
-
-/* CSS cho thây ma 10 - Quỷ đỏ II */
-.zombie.thayma10 {
-  background: url('thayma10.png') center/cover no-repeat;
-  width: 80px;
-  height: 100px;
-  border: 3px solid #FF0000;
-  box-shadow: 0 0 15px #FF0000;
-  z-index: 1002;
-}
-/* CSS cho thây ma 9 - Quỷ đỏ I */
-.zombie.thayma9 {
-  background: url('thayma9.png') center/cover no-repeat;
-  width: 70px;
-  height: 90px;
-  border: 3px solid #FF4500;
-  box-shadow: 0 0 10px #FF4500;
-}
-
-/* CSS cho thây ma 10 - Quỷ đỏ II */
-.zombie.thayma10 {
-  background: url('thayma10.png') center/cover no-repeat;
-  width: 80px;
-  height: 100px;
-  border: 3px solid #FF0000;
-  box-shadow: 0 0 15px #FF0000;
-  z-index: 1002;
-}
-
-/* Đạn của thây ma 9 */
-.bullet.thayma9-bullet {
-  background: #FF4500;
-  width: 15px;
-  height: 15px;
-  border-radius: 50%;
-  border: 2px solid #8B0000;
-  box-shadow: 0 0 5px #FF4500;
-  animation: thayma9BulletPulse 0.5s infinite alternate;
-}
-
-@keyframes thayma9BulletPulse {
-  0% { transform: scale(1); box-shadow: 0 0 5px #FF4500; }
-  100% { transform: scale(1.1); box-shadow: 0 0 10px #FF4500; }
-}
-
-/* Đạn của thây ma 10 */
-.bullet.thayma10-bullet {
-  background: #FF0000;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  border: 2px solid #8B0000;
-  box-shadow: 0 0 10px #FF0000;
-  animation: thayma10BulletPulse 0.3s infinite alternate;
-}
-
-@keyframes thayma10BulletPulse {
-  0% { transform: scale(1); box-shadow: 0 0 10px #FF0000; }
-  100% { transform: scale(1.2); box-shadow: 0 0 15px #FF0000; }
-}
-/* Thêm vào cuối file style.css */
-
-/* Modal chi tiết cây */
-#plantDetailModal {
-  position: fixed;
-  top: 0;
-  right: 0;
-  width: 420px;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.95);
-  display: none;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: center;
-  z-index: 10000;
-  color: white;
-  padding: 20px;
-  box-sizing: border-box;
-  overflow-y: auto;
-  box-shadow: -5px 0 20px rgba(0, 0, 0, 0.5);
-}
-
-#plantDetailContent {
-  background: linear-gradient(145deg, #2a6e2a, #1e4e1e);
-  padding: 25px;
-  border-radius: 15px;
-  border: 4px solid gold;
-  width: 100%;
-  max-width: 380px;
-  position: relative;
-  margin-top: 20px;
-  box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
-  min-height: 500px;
-}
-
-#closeDetailBtn {
-  position: absolute;
-  top: 15px;
-  right: 15px;
-  background: #ff4444;
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 35px;
-  height: 35px;
-  cursor: pointer;
-  font-size: 18px;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10001;
-  transition: all 0.3s;
-  box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
-}
-
-#closeDetailBtn:hover {
-  background: #ff0000;
-  transform: scale(1.1) rotate(90deg);
-  box-shadow: 0 0 15px rgba(255, 0, 0, 0.8);
-}
-
-#detailPlantName {
-  text-align: center;
-  color: gold;
-  font-size: 26px;
-  margin-bottom: 20px;
-  padding-bottom: 15px;
-  border-bottom: 3px solid gold;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-  font-weight: bold;
-}
-
-#detailPlantImage {
-  text-align: center;
-  margin-bottom: 25px;
-  padding: 10px;
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 10px;
-  border: 2px solid rgba(255, 215, 0, 0.3);
-}
-
-#detailPlantImage img {
+.effect.boom {
   width: 140px;
   height: 140px;
+  background: radial-gradient(circle, rgba(255,220,128,0.95), rgba(255,110,64,0.46), transparent 72%);
+}
+
+.effect.bounce-ring {
+  width: 54px;
+  height: 54px;
+  border: 2px solid rgba(180, 155, 255, 0.95);
+}
+
+.effect.status {
+  width: 42px;
+  height: 42px;
+  border: 2px solid rgba(255,255,255,0.75);
+}
+
+@keyframes pop {
+  from { opacity: 1; transform: translate(-50%, -50%) scale(0.45); }
+  to { opacity: 0; transform: translate(-50%, -50%) scale(1.25); }
+}
+
+.zombie-shell {
+  filter: drop-shadow(0 8px 10px rgba(0,0,0,0.25));
+}
+
+.zombie.red .fallback-face { background: linear-gradient(135deg, #8a1d1d, #d83b3b); }
+.zombie.big .fallback-face { background: linear-gradient(135deg, #494949, #858585); }
+.zombie.smart .fallback-face { background: linear-gradient(135deg, #4155ff, #8aa0ff); }
+.zombie.purple .fallback-face { background: linear-gradient(135deg, #51218a, #a55cff); }
+.zombie.thayma2 .fallback-face { background: linear-gradient(135deg, #5b341d, #cc8a53); }
+.zombie.thayma3 .fallback-face { background: linear-gradient(135deg, #1f3c36, #4b9b8b); }
+.zombie.thayma4 .fallback-face { background: linear-gradient(135deg, #7a1717, #ff7b2f); }
+.zombie.thayma5 .fallback-face { background: linear-gradient(135deg, #232323, #6d1111); }
+.zombie.thayma6 .fallback-face { background: linear-gradient(135deg, #050505, #5b0000); }
+.zombie.thayma7 .fallback-face { background: linear-gradient(135deg, #3d003e, #ff00b8); }
+.zombie.thayma8 .fallback-face { background: linear-gradient(135deg, #2b215a, #00d3ff); }
+.zombie.thayma9 .fallback-face { background: linear-gradient(135deg, #660000, #ff2a2a); }
+.zombie.thayma10 .fallback-face { background: linear-gradient(135deg, #230000, #ff0000); }
+
+.zombie.slowed {
+  filter: saturate(0.8) brightness(1.05) hue-rotate(190deg);
+}
+
+.zombie.extreme-slow {
+  filter: saturate(0.7) brightness(0.82) hue-rotate(320deg);
+}
+
+.zombie.buffed {
+  box-shadow: 0 0 26px rgba(255, 74, 197, 0.6);
+}
+
+.detail-header {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.detail-image {
+  width: 140px;
+  height: 140px;
+  border-radius: 24px;
+  background: rgba(255,255,255,0.08);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.detail-image img {
+  width: 100%;
+  height: 100%;
   object-fit: contain;
-  border-radius: 10px;
-  border: 3px solid white;
-  box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
-  background: linear-gradient(145deg, #3a8a3a, #2a6e2a);
-  padding: 5px;
 }
 
-#plantDetailInfo {
-  background: rgba(0, 0, 0, 0.3);
-  padding: 20px;
-  border-radius: 10px;
-  border: 2px solid rgba(255, 255, 255, 0.1);
-  max-height: 400px;
-  overflow-y: auto;
+.detail-role {
+  margin: 6px 0 0;
+  color: var(--accent);
+  font-weight: 700;
 }
 
-.detail-item {
+.detail-body {
+  display: grid;
+  gap: 14px;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.detail-card {
+  border-radius: 18px;
+  padding: 14px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.detail-card strong {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--accent);
+}
+
+.detail-list {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.dialog-head {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 12px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-  font-size: 16px;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 16px;
 }
 
-.detail-label {
-  font-weight: bold;
-  color: #ffcc00;
-  min-width: 120px;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+#selectedCount {
+  font-weight: 800;
+  color: var(--accent);
 }
 
-.detail-value {
-  text-align: right;
-  color: white;
-  flex: 1;
-  font-weight: bold;
+#plantSelectionGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
 }
 
-.detail-description {
-  margin-top: 20px;
-  padding-top: 15px;
-  border-top: 2px solid rgba(255, 255, 255, 0.3);
+.plant-select-card {
+  display: grid;
+  grid-template-columns: 72px 1fr;
+  gap: 14px;
+  border-radius: 20px;
+  padding: 14px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.05);
 }
 
-.detail-description .detail-label {
-  display: block;
+.plant-select-card.selected {
+  outline: 2px solid var(--accent);
+  box-shadow: 0 0 0 4px rgba(255, 217, 102, 0.12);
+}
+
+.plant-select-card .thumb {
+  width: 72px;
+  height: 72px;
+  border-radius: 18px;
+  background: rgba(255,255,255,0.08);
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+}
+
+.plant-select-card h3 {
+  margin: 0 0 4px;
+  font-size: 17px;
+}
+
+.plant-select-card p {
+  margin: 0 0 10px;
+  color: var(--muted);
+  line-height: 1.45;
+  font-size: 14px;
+}
+
+.selection-meta {
+  font-size: 13px;
+  color: var(--muted);
   margin-bottom: 10px;
-  font-size: 18px;
-  color: #00ffcc;
 }
 
-.detail-description p {
+.selection-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.selection-actions button {
+  padding: 9px 12px;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.selection-toolbar-actions {
+  flex-wrap: wrap;
+}
+
+.fusion-modal-head h2 {
+  margin: 0 0 6px;
+}
+
+.fusion-modal-head p {
   margin: 0;
+  color: var(--muted);
   line-height: 1.6;
-  color: #e0e0e0;
-  font-size: 15px;
-  background: rgba(0, 0, 0, 0.2);
+}
+
+.timer-hit {
+  color: var(--good);
+}
+
+.flash-message-win { color: #fff2ad; }
+.flash-message-danger { color: #ffb0b0; }
+.flash-message-info { color: #b7e7ff; }
+
+@media (max-width: 1080px) {
+  #hud {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .hud-actions {
+    grid-column: span 2;
+  }
+
+  .panel-head,
+  .dialog-head,
+  .detail-header,
+  .dialog-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  #hud {
+    grid-template-columns: 1fr;
+  }
+
+  .hud-actions {
+    grid-column: auto;
+  }
+
+  #shop {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  #plantSelectionGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+#fusionPanel {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+
+.fusion-panel-head h3 {
+  margin: 0 0 6px;
+}
+
+.fusion-panel-head p {
+  margin: 0 0 12px;
+  color: var(--muted);
+}
+
+.fusion-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 10px;
+}
+
+.fusion-card {
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  gap: 12px;
+  width: 100%;
   padding: 12px;
-  border-radius: 8px;
-  border-left: 4px solid #00ffcc;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04));
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
 }
 
-/* Hiệu ứng cho modal */
-@keyframes slideInRight {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
+.fusion-thumb {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.08);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  font-size: 30px;
 }
 
-@keyframes slideOutRight {
-  from {
-    transform: translateX(0);
-    opacity: 1;
-  }
-  to {
-    transform: translateX(100%);
-    opacity: 0;
-  }
+.fusion-info {
+  min-width: 0;
 }
 
-#plantDetailModal {
-  animation: slideInRight 0.4s ease-out;
+.fusion-name {
+  font-weight: 800;
+  margin-bottom: 4px;
 }
 
-#plantDetailModal.closing {
-  animation: slideOutRight 0.4s ease-out;
+.fusion-formula {
+  font-size: 13px;
+  color: var(--accent);
+  margin-bottom: 4px;
 }
 
-/* Scrollbar cho modal */
-#plantDetailInfo::-webkit-scrollbar {
-  width: 8px;
+.fusion-meta {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.45;
 }
 
-#plantDetailInfo::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 4px;
+.fusion-drag-ghost {
+  position: fixed;
+  z-index: 10000;
+  width: 58px;
+  height: 58px;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  border-radius: 16px;
+  border: 2px solid rgba(255, 217, 102, 0.85);
+  background: rgba(18, 39, 29, 0.92);
+  box-shadow: 0 12px 28px rgba(0,0,0,0.3), 0 0 0 4px rgba(255, 217, 102, 0.16);
+  display: grid;
+  place-items: center;
+  font-size: 28px;
 }
 
-#plantDetailInfo::-webkit-scrollbar-thumb {
-  background: gold;
-  border-radius: 4px;
+.fusion-drag-ghost img {
+  width: 88%;
+  height: 88%;
+  object-fit: contain;
 }
 
-#plantDetailInfo::-webkit-scrollbar-thumb:hover {
-  background: #ffcc00;
+.projectile.fusion {
+  background: radial-gradient(circle at 30% 30%, #fffad6, #ffd24d 48%, #8dff7a 100%);
+  box-shadow: 0 0 16px rgba(255, 221, 87, 0.55);
 }
 
-/* Gợi ý double click */
-.plant-detail-hint {
-  position: absolute;
-  bottom: 5px;
-  left: 0;
-  right: 0;
-  font-size: 10px;
-  color: #ffcc00;
-  text-align: center;
-  background: rgba(0, 0, 0, 0.7);
-  padding: 3px;
-  border-radius: 3px;
-  opacity: 0;
-  transition: opacity 0.3s;
-  z-index: 1;
+
+#fusionPanel { display: none !important; }
+
+
+#appShell {
+  position: relative;
 }
 
-.plant-select-item:hover .plant-detail-hint {
-  opacity: 1;
+#chatPanel {
+  width: min(320px, 100%);
+  margin-left: auto;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  padding: 12px;
+  background: linear-gradient(180deg, rgba(24, 50, 38, 0.94), rgba(15, 33, 25, 0.96));
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.24);
 }
 
-/* Hiệu ứng cho double click */
-.plant-select-item.double-clicked {
-  animation: pulseDetail 0.5s;
-}
-
-@keyframes pulseDetail {
-  0% { transform: scale(1); box-shadow: 0 0 0 rgba(255, 215, 0, 0.7); }
-  50% { transform: scale(1.05); box-shadow: 0 0 20px rgba(255, 215, 0, 0.7); }
-  100% { transform: scale(1); box-shadow: 0 0 0 rgba(255, 215, 0, 0.7); }
-}
-
-/* Responsive cho modal */
-@media (max-width: 1400px) {
-  #plantDetailModal {
-    width: 380px;
-  }
-  
-  #plantDetailContent {
-    max-width: 340px;
-  }
-}
-
-@media (max-width: 1200px) {
-  #plantDetailModal {
-    width: 350px;
-  }
-  
-  #plantDetailContent {
-    max-width: 320px;
-    padding: 20px;
-  }
-  
-  #detailPlantName {
-    font-size: 22px;
-  }
-  
-  #detailPlantImage img {
-    width: 120px;
-    height: 120px;
-  }
-}
-
-@media (max-height: 800px) {
-  #plantDetailContent {
-    margin-top: 10px;
-    min-height: 400px;
-  }
-  
-  #plantDetailInfo {
-    max-height: 300px;
-  }
-}
-
-/* Hiệu ứng loading cho ảnh */
-#detailPlantImage img {
-  background: linear-gradient(90deg, #3a8a3a 0%, #5aaa5a 50%, #3a8a3a 100%);
-  background-size: 200% 100%;
-}
-
-#detailPlantImage img.loading {
-  animation: loadingShimmer 1.5s infinite;
-}
-
-@keyframes loadingShimmer {
-  0% { background-position: -200px 0; }
-  100% { background-position: calc(200px + 100%) 0; }
-}
-
-/* Badge cho cây đã chọn */
-.plant-select-item.selected::before {
-  content: "✓";
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: gold;
-  color: #2a6e2a;
-  width: 25px;
-  height: 25px;
-  border-radius: 50%;
+.chat-head {
   display: flex;
   align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  font-size: 16px;
-  z-index: 2;
-  box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
 }
 
-/* Tooltip khi hover */
-.plant-select-item[title]:hover::after {
-  content: attr(title);
-  position: absolute;
-  top: -40px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(0, 0, 0, 0.9);
-  color: white;
-  padding: 8px 12px;
-  border-radius: 6px;
+.chat-chip {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.08);
+  color: var(--muted);
   font-size: 12px;
-  white-space: nowrap;
-  z-index: 1000;
-  border: 1px solid gold;
+}
+
+.chat-log {
+  min-height: 124px;
+  max-height: 180px;
+  overflow-y: auto;
+  padding-right: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.chat-msg {
+  padding: 9px 11px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.06);
+  line-height: 1.45;
+  word-break: break-word;
+}
+
+.chat-msg strong {
+  display: block;
+  margin-bottom: 3px;
+  font-size: 12px;
+  color: var(--accent);
+}
+
+.chat-msg.system strong {
+  color: var(--good);
+}
+
+.chat-msg.error strong {
+  color: var(--danger);
+}
+
+.chat-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+#chatInput {
+  min-width: 0;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 14px;
+  padding: 12px 14px;
+  background: rgba(0,0,0,0.22);
+  color: var(--text);
+  outline: none;
+}
+
+#chatInput::placeholder {
+  color: rgba(244,255,242,0.56);
+}
+
+#chatInput:focus {
+  border-color: rgba(255, 217, 102, 0.55);
+  box-shadow: 0 0 0 3px rgba(255, 217, 102, 0.12);
+}
+
+@media (max-width: 900px) {
+  #chatPanel {
+    width: 100%;
+  }
+}
+
+
+.projectile.breath-wave {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 8;
+}
+
+.projectile.breath-wave .breath-cell {
+  position: absolute;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: 0.88;
+  filter: drop-shadow(0 0 10px rgba(130, 220, 255, 0.45));
+}
+
+
+.evolution-card {
+  border-color: rgba(142, 242, 168, 0.35);
+  box-shadow: 0 0 0 1px rgba(142, 242, 168, 0.08) inset;
+}
+
+.roll-wave {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 8;
+}
+
+.roll-cell {
+  position: absolute;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  opacity: 0.78;
+  animation: rollCellFlash 0.65s ease-out forwards;
+  filter: drop-shadow(0 0 10px rgba(255, 217, 102, 0.35));
+}
+
+@keyframes rollCellFlash {
+  0% { transform: scale(0.72) rotate(0deg); opacity: 0.2; }
+  35% { transform: scale(1.02) rotate(18deg); opacity: 0.95; }
+  100% { transform: scale(1.15) rotate(32deg); opacity: 0; }
+}
+
+
+.zombie.allied,
+.zombie.hypnotized {
+  filter: drop-shadow(0 0 14px rgba(120, 255, 154, 0.45));
+}
+
+.zombie.allied .zombie-shell,
+.zombie.hypnotized .zombie-shell {
+  transform: scaleX(-1);
+}
+
+.zombie.hypnotized::after {
+  content: '✦';
+  position: absolute;
+  top: -10px;
+  right: 6px;
+  color: #8ef2a8;
+  font-weight: 900;
+  text-shadow: 0 0 8px rgba(142, 242, 168, 0.7);
+}
+
+.projectile.angel {
+  width: 26px;
+  height: 10px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #fff7c2, #ffffff 45%, #8ef2a8 100%);
+  box-shadow: 0 0 14px rgba(255, 247, 194, 0.6);
+}
+
+
+.difficulty-dialog {
+  width: min(980px, 100%);
+}
+
+.difficulty-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.difficulty-card {
+  text-align: left;
+  padding: 18px;
+  min-height: 170px;
+  border-radius: 22px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: linear-gradient(180deg, rgba(255,255,255,0.09), rgba(255,255,255,0.05));
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.difficulty-card.danger {
+  border-color: rgba(255, 107, 107, 0.35);
+  background: linear-gradient(180deg, rgba(120, 34, 34, 0.42), rgba(60, 15, 15, 0.35));
+}
+
+.difficulty-title {
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.difficulty-sub {
+  font-size: 14px;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.difficulty-meta {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.difficulty-back-btn {
+  top: 16px;
+  left: 16px;
+  right: auto;
+}
+
+body.difficulty-night-active {
+  background:
+    radial-gradient(circle at top, rgba(99, 95, 181, 0.18), transparent 35%),
+    linear-gradient(180deg, #08111f 0%, #0b1730 100%);
+}
+
+body.difficulty-hell-active {
+  background:
+    radial-gradient(circle at top, rgba(180, 50, 50, 0.18), transparent 35%),
+    linear-gradient(180deg, #1a0909 0%, #2a1010 100%);
+}
+
+@media (max-width: 980px) {
+  .difficulty-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* Pause overlay must not block the HUD continue button */
+#hud {
+  position: sticky;
+  top: 0;
+  z-index: 10020;
+}
+
+#pauseScreen {
+  z-index: 10010;
+  background: transparent;
+  backdrop-filter: none;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 86px;
+  pointer-events: none;
+}
+
+#pauseScreen .dialog {
+  width: min(520px, calc(100% - 24px));
+  pointer-events: none;
+  border-color: rgba(255,255,255,0.12);
+  background: linear-gradient(180deg, rgba(29, 64, 47, 0.92), rgba(19, 41, 31, 0.94));
+  box-shadow: 0 20px 50px rgba(0,0,0,0.28);
+}
+
+
+/* Lane mower */
+.entity.mower {
+  z-index: 3;
+  transition: filter 0.15s ease, opacity 0.2s ease;
+  pointer-events: none;
+}
+.entity.mower .fallback-face,
+.entity.mower img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.entity.mower.active {
+  z-index: 9;
+  filter: drop-shadow(0 0 10px rgba(255, 217, 102, 0.6));
+}
+.entity.mower.spent {
+  opacity: 0.35;
+}
+
+
+.start-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.guide-start-btn {
+  font-weight: 700;
+}
+
+.guide-dialog {
+  width: min(980px, 100%);
+  text-align: left;
+}
+
+.guide-sections {
+  display: grid;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.guide-section {
+  padding: 14px 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.04);
+}
+
+.guide-section h3 {
+  margin: 0 0 8px;
+  color: var(--accent);
+}
+
+.guide-section p {
+  margin: 0 0 8px;
+  line-height: 1.7;
+}
+
+.guide-section ul,
+.guide-section ol {
+  margin: 8px 0 0 20px;
+  padding: 0;
+  line-height: 1.8;
+}
+
+.guide-final {
+  border-color: rgba(142,242,168,0.3);
+  background: rgba(142,242,168,0.08);
+}
+
+@media (max-width: 640px) {
+  .start-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }
