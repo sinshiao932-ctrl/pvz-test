@@ -278,9 +278,39 @@ button {
   border-color: rgba(255, 107, 107, 0.3);
 }
 
+
+.shop-card.cooling-down {
+  overflow: hidden;
+}
+
+.shop-card .cooldown-mask {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  background: rgba(5, 12, 9, 0.62);
+  backdrop-filter: blur(1px);
+  pointer-events: none;
+}
+
+.shop-card .cooldown-timer {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(0,0,0,0.45);
+  border: 1px solid rgba(255,255,255,0.14);
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
 #gameArea {
   position: relative;
   overflow-x: auto;
+  overflow-y: auto;
+  max-height: calc(var(--cell-h) * 10 + 24px);
 }
 
 #game {
@@ -386,6 +416,47 @@ button {
   border-radius: 999px;
   overflow: hidden;
   background: rgba(255,255,255,0.1);
+}
+
+.has-double-health .hp-tag {
+  top: -34px;
+}
+
+.zombie-health-stack {
+  position: absolute;
+  left: 50%;
+  top: -18px;
+  transform: translateX(-50%);
+  width: 76px;
+  display: grid;
+  gap: 4px;
+  pointer-events: none;
+}
+
+.zombie-health-bar {
+  height: 6px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(0,0,0,0.45);
+  border: 1px solid rgba(255,255,255,0.14);
+}
+
+.zombie-health-fill {
+  height: 100%;
+  width: 100%;
+  border-radius: inherit;
+}
+
+.zombie-health-fill.blue {
+  background: linear-gradient(90deg, #8ad7ff, #2f8dff);
+}
+
+.zombie-health-fill.red {
+  background: linear-gradient(90deg, #ff8f8f, #ff3131);
+}
+
+.zombie.shield-broken .zombie-health-bar.blue {
+  opacity: 0.35;
 }
 
 .mana-fill {
@@ -981,7 +1052,7 @@ button {
 
 .difficulty-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 14px;
   margin-top: 18px;
 }
@@ -1150,4 +1221,242 @@ body.difficulty-hell-active {
     flex-direction: column;
     align-items: stretch;
   }
+}
+
+
+.admin-panel {
+  position: fixed;
+  left: 24px;
+  top: 24px;
+  z-index: 12000;
+  width: min(360px, calc(100vw - 24px));
+  border: 3px solid rgba(255,255,255,0.22);
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(18, 40, 30, 0.96), rgba(12, 27, 20, 0.98));
+  box-shadow: 0 20px 50px rgba(0,0,0,0.45);
+  user-select: none;
+  cursor: move;
+}
+
+.admin-panel.hidden {
+  display: none !important;
+}
+
+.admin-panel-inner {
+  padding: 12px;
+}
+
+.admin-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+}
+
+.admin-close-btn,
+.admin-money-row button,
+.admin-time-row button,
+.admin-toggle-btn {
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 12px;
+  background: rgba(255,255,255,0.08);
+  color: var(--text);
+  padding: 10px 12px;
+  font: inherit;
+  cursor: pointer;
+}
+
+.admin-section + .admin-section {
+  margin-top: 12px;
+}
+
+.admin-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.admin-money-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) repeat(3, auto);
+  gap: 8px;
+}
+
+.admin-money-row input {
+  min-width: 0;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(255,255,255,0.08);
+  color: var(--text);
+  padding: 10px 12px;
+  font: inherit;
+}
+
+.admin-time-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.admin-toggle-stack {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.admin-toggle-btn.is-off {
+  background: rgba(180, 40, 40, 0.85);
+  color: #fff;
+}
+
+.admin-toggle-btn.is-on {
+  background: rgba(27, 164, 88, 0.9);
+  color: #fff;
+}
+
+.admin-panel button:hover {
+  filter: brightness(1.06);
+}
+
+
+.zombie-dialog {
+  max-width: min(1240px, 100%);
+}
+
+.zombie-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 12px;
+}
+
+.zombie-card {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04));
+}
+
+.zombie-card-head {
+  display: grid;
+  grid-template-columns: 72px 1fr;
+  gap: 14px;
+  align-items: center;
+}
+
+.zombie-card-head h3 {
+  margin: 0 0 4px;
+}
+
+.zombie-card-thumb {
+  width: 72px;
+  height: 72px;
+  border-radius: 18px;
+  background: rgba(255,255,255,0.08);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.zombie-card-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.zombie-stats-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.zombie-stats-grid .detail-card div {
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.zombie-stats-grid .detail-card strong {
+  display: inline;
+  margin: 0;
+  color: var(--accent);
+}
+
+.zombie-trait-list {
+  margin-top: 6px;
+}
+
+@media (max-width: 720px) {
+  .zombie-list {
+    grid-template-columns: 1fr;
+  }
+
+  .zombie-stats-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+.admin-zombie-test-grid {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  max-height: 240px;
+  overflow: auto;
+  padding-right: 4px;
+}
+
+.admin-zombie-test-grid.hidden {
+  display: none !important;
+}
+
+.admin-zombie-test-btn {
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 12px;
+  background: rgba(255,255,255,0.08);
+  color: var(--text);
+  padding: 9px 10px;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
+.admin-zombie-test-btn:hover {
+  filter: brightness(1.08);
+}
+
+
+.sniper-beam {
+  position: absolute;
+  height: 4px;
+  transform-origin: left center;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(255,255,255,0.95), rgba(255,255,255,0.15));
+  box-shadow: 0 0 10px rgba(255,255,255,0.55);
+  z-index: 24;
+  pointer-events: none;
+}
+
+.pepper-field {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 22;
+}
+
+.pepper-mini-cell {
+  position: absolute;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  filter: drop-shadow(0 0 8px rgba(255, 110, 0, 0.45));
+  animation: pepper-mini-pop 0.28s ease-out alternate infinite;
+}
+
+@keyframes pepper-mini-pop {
+  from { transform: scale(0.9) rotate(-4deg); opacity: 0.8; }
+  to { transform: scale(1.08) rotate(4deg); opacity: 1; }
 }

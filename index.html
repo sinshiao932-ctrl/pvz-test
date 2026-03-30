@@ -143,6 +143,11 @@
           <div class="difficulty-sub">Late-game ngay từ đầu</div>
           <div class="difficulty-meta">Bắt đầu với 7000 mặt trời. 2 phút đầu chỉ để setup, sau đó timeline nhảy thẳng tới phút 10.</div>
         </button>
+        <button type="button" class="difficulty-card danger" data-difficulty="endless_night">
+          <div class="difficulty-title">🌑 Màn đêm vô tận</div>
+          <div class="difficulty-sub">10 hàng, sống sót vô hạn</div>
+          <div class="difficulty-meta">Mỗi phút zombie +5 máu tối đa. Cứ 5 phút số lượng spawn tăng thêm 5. Từ phút 30 trở đi, MiniBoss thay thế zombie thường và xuất hiện dày đặc.</div>
+        </button>
       </div>
     </div>
   </div>
@@ -160,6 +165,7 @@
       <div class="dialog-actions selection-toolbar-actions">
         <button id="autoSelectBtn" class="ghost-btn">⚙️ Gợi ý đội hình cơ bản</button>
         <button id="showFusionListBtn" class="ghost-btn">🧬 Xem danh sách dung hợp</button>
+        <button id="showZombieListBtn" class="ghost-btn">🧟 Xem bảng zombie</button>
         <button id="confirmPlantsBtn" class="primary-btn" disabled>Xác nhận và bắt đầu</button>
       </div>
     </div>
@@ -190,6 +196,19 @@
         </div>
       </div>
       <div id="fusionListContainer" class="fusion-list"></div>
+    </div>
+  </div>
+
+  <div id="zombieListModal" class="overlay hidden">
+    <div class="dialog wide-dialog zombie-dialog">
+      <button id="closeZombieListBtn" class="close-btn" aria-label="Đóng">✕</button>
+      <div class="dialog-head fusion-modal-head">
+        <div>
+          <h2>🧟 Bảng chỉ số zombie</h2>
+          <p>Nơi đây hiển thị máu, sát thương, tốc chạy, phần thưởng, miễn nhiễm, kỹ năng đặc biệt và các chỉ số quan trọng của toàn bộ zombie trong game.</p>
+        </div>
+      </div>
+      <div id="zombieListContainer" class="zombie-list"></div>
     </div>
   </div>
 
@@ -236,7 +255,7 @@
       </div>
       <div id="chatLog" class="chat-log" aria-live="polite"></div>
       <form id="chatForm" class="chat-form" autocomplete="off">
-        <input id="chatInput" type="text" maxlength="120" placeholder="Nhập tin nhắn...">
+        <input id="chatInput" type="text" maxlength="120" placeholder="Nhập tin nhắn... (/Admin Login)">
         <button id="chatSendBtn" type="submit" class="ghost-btn">Gửi</button>
       </form>
     </section>
@@ -267,7 +286,7 @@
     };
 
     const PLANT_ORDER = [
-      "sunflower", "bigsun", "pea", "peaice", "pea2", "wallnut", "cherry", "azami", "shovel",
+      "sunflower", "bigsun", "pea", "peaice", "pea2", "wallnut", "cherry", "cay36", "azami", "shovel",
       "cay10", "cay11", "cay12", "cay13", "cay14", "cay15", "cay16", "cay17", "cay18", "cay19", "cay25"
     ];
 
@@ -356,6 +375,20 @@
           description: "Sau 1.5 giây sẽ tự nổ, gây 1000 sát thương trong vùng 1.5 ô quanh nó.",
           tips: ["Dùng để cứu hàng đang vỡ.", "Không nên đặt sớm vì nổ xong là biến mất."],
           action: { type: "exploder", delay: 1500, damage: 1000, range: 1.5 }
+        },
+        cay36: {
+          name: "Ớt",
+          role: "Nổ toàn bản đồ",
+          cost: 375,
+          hp: 1,
+          image: "cay36.png",
+          width: 60,
+          height: 60,
+          hideHpTag: true,
+          untouchable: true,
+          description: "Sau 2 giây sẽ phát nổ, phóng Ớt mini khắp bản đồ. Zombie chạm vào Ớt mini sẽ chịu 2000 sát thương.",
+          tips: ["Cây này là vật phẩm nổ dùng để quét toàn sân.", "Không thể bị tiêu diệt trước khi kích nổ.", "Rất mạnh khi zombie đang phủ kín bản đồ."],
+          action: { type: "pepperStorm", delay: 2000, miniDamage: 2000, fieldDuration: 850 }
         },
         azami: {
           name: "Azami",
@@ -547,7 +580,7 @@
         thayma3: { name: "Thây ma 3 - Chặn đường", baseHp: 3000, speed: 0.4, attackDamage: 0, canAttack: false, stopsAtPlant: true, sunReward: 75, scoreReward: 5 },
         thayma4: { name: "Thây ma 4 - Bom nổ", baseHp: 500, speed: 0.1, attackDamage: 999, explosionOnDeath: true, explosionRange: 1.5, sunReward: 100, scoreReward: 10 },
         thayma5: { name: "Thây ma 5 - Chiến binh bất khả chiến bại", baseHp: 8000, speed: 0.65, attackDamage: 5, immuneToControl: true, immuneToKnockback: true, sunReward: 150, scoreReward: 15 },
-        thayma6: { name: "Thây ma 6 - Quái vật tối thượng", baseHp: 5000000, speed: 0.32, attackDamage: 0, canAttack: false, immuneToControl: true, immuneToKnockback: true, immuneToExplosion: true, immuneToEffectKill: true, immuneToHypnosis: true, hardImmunity: true, stopsAtDistance: 2, rangedAttack: true, rangedDamage: 200, rangedInterval: 5000, sunReward: 1000, scoreReward: 100, winOnKill: true },
+        thayma6: { name: "Thây ma 6 - Quái vật tối thượng", baseHp: 5000000, speed: 0.32, attackDamage: 0, canAttack: false, immuneToControl: true, immuneToKnockback: true, immuneToExplosion: true, immuneToEffectKill: true, immuneToHypnosis: true, hardImmunity: true, forceMiddleRow: true, stopAfterCells: 5, sizeMultiplier: 3, rowSpan: 3, hitHalfWidth: 0.84, rangedAttack: true, rangedDamage: 200, rangedInterval: 5000, sunReward: 1000, scoreReward: 100, winOnKill: true },
         thayma7: { name: "Sứ giả khe nứt", baseHp: 60000, speed: 0.5, attackDamage: 999, attackInterval: 3000, knockbackOnHit: true, knockbackDistance: 1, immuneToControl: true, immuneToKnockback: true, immuneToEffectKill: true, immuneToHypnosis: true, hardImmunity: true, sunReward: 500, scoreReward: 50 },
         thayma8: { name: "Baron Nashor", baseHp: 100000, speed: 0.55, attackDamage: 0, canAttack: false, stopsAtDistance: 2, immuneToControl: true, immuneToKnockback: true, immuneToExplosion: true, immuneToEffectKill: true, immuneToHypnosis: true, hardImmunity: true, buffsThayma7: true, buffSpeedAmount: 1.0, buffAttackSpeedAmount: 1.0, spawnsThayma7OnDeath: true, spawnedThayma7Hp: 300000, spawnOnAppearance: true, sunReward: 1000, scoreReward: 200 },
         thayma9: { name: "Quỷ đỏ I", baseHp: 2000, speed: 0.75, attackDamage: 10, canShoot: true, shootInterval: 500, shootDamage: 30, immuneToControl: true, immuneToKnockback: true, immuneToEffectKill: true, immuneToHypnosis: true, hardImmunity: true, sunReward: 200, scoreReward: 20 },
@@ -559,6 +592,6 @@
   <script src="plant-selection.js"></script>
   <script src="game-main.js"></script>
 
-  <!-- Admin test commands (hidden): /Admin +<so_mat_troi> | /God 1 | /God 0 | /Skip <so_phut> -->
+  <!-- Admin test commands (hidden): /Admin Login | /Admin +<so_mat_troi> | /God 1 | /God 0 | /NoCooldown 1 | /WallnutImmortal 1 | /WallnutImmortal 0 | /Skip <so_phut> -->
 </body>
 </html>

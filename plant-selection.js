@@ -40,6 +40,19 @@
       setupDurationMs: 120000,
       timelineJumpTargetMs: 600000,
       bodyClass: 'difficulty-hell-active'
+    },
+    endless_night: {
+      key: 'endless_night',
+      name: 'Màn đêm vô tận',
+      description: '10 hàng, sống sót vô hạn, miniboss dày đặc',
+      startingSun: 1500,
+      zombieHpMultiplier: 1,
+      zombieSpeedMultiplier: 1,
+      setupDurationMs: 0,
+      timelineJumpTargetMs: 0,
+      rows: 10,
+      cols: GAME_SETTINGS.cols,
+      bodyClass: 'difficulty-night-active'
     }
   };
 
@@ -68,6 +81,10 @@
     fusionModal: document.getElementById('fusionListModal'),
     closeFusionListBtn: document.getElementById('closeFusionListBtn'),
     fusionListContainer: document.getElementById('fusionListContainer'),
+    showZombieListBtn: document.getElementById('showZombieListBtn'),
+    zombieModal: document.getElementById('zombieListModal'),
+    closeZombieListBtn: document.getElementById('closeZombieListBtn'),
+    zombieListContainer: document.getElementById('zombieListContainer'),
   };
 
 
@@ -124,6 +141,39 @@
     }
 
     return [{
+      result: 'cay27',
+      ingredients: ['sunflower', 'sunflower'],
+      formulaText: 'Hướng dương + Hướng dương = Hướng Dương 2 đầu'
+    }, {
+      result: 'cay28',
+      ingredients: ['pea2', 'pea2'],
+      formulaText: 'Pea 2 đầu + Pea 2 đầu = Peashooter 6 nòng'
+    }, {
+      result: 'cay29',
+      ingredients: ['cay28', 'cay28'],
+      formulaText: 'Peashooter 6 nòng + Peashooter 6 nòng = Gatling Pea Turret'
+    }, {
+      result: 'cay30',
+      ingredients: ['pea', 'wallnut'],
+      formulaText: 'Pea + Óc chó = Óc Chó Pea'
+    }, {
+      result: 'cay31',
+      ingredients: ['wallnut', 'cherry'],
+      formulaText: 'Óc chó + Cherry = Óc Chó Lửa',
+      cardHint: 'Cách tạo đặc biệt: chọn Cherry rồi trồng trực tiếp lên ô của Óc chó để dung hợp.'
+    }, {
+      result: 'cay32',
+      ingredients: ['cay30', 'cay31'],
+      formulaText: 'Óc Chó Pea + Óc Chó Lửa = Óc Chó Ăn Thịt'
+    }, {
+      result: 'cay33',
+      ingredients: ['wallnut', 'wallnut'],
+      formulaText: 'Óc chó + Óc chó = Óc Chó Cấp 2'
+    }, {
+      result: 'cay34',
+      ingredients: ['cay28', 'pea'],
+      formulaText: 'Peashooter 6 nòng + Pea = Sniper'
+    }, {
       result: 'cay20',
       ingredients: ['sunflower', 'pea'],
       formulaText: 'Hướng dương + Pea → Cây dung hợp 20'
@@ -230,6 +280,105 @@
   }
 
 
+  function zombieImageTag(type, name) {
+    return createImageTag(`${type}.png`, name || type);
+  }
+
+  function formatZombieStat(label, value) {
+    return `<div><strong>${label}:</strong> ${value}</div>`;
+  }
+
+  function collectZombieTraits(type, config) {
+    const traits = [];
+    if (config.canAttack === false) traits.push('Không cắn trực tiếp');
+    if (config.canShoot) traits.push(`Bắn xa mỗi ${(config.shootInterval || 0) / 1000} giây`);
+    if (config.rangedAttack) traits.push(`Đánh xa mỗi ${(config.rangedInterval || 0) / 1000} giây`);
+    if (config.passThroughPlants) traits.push('Đi xuyên qua cây');
+    if (config.stopsAtPlant) traits.push('Đứng chặn đường');
+    if (config.explosionOnDeath) traits.push(`Nổ khi chết, bán kính ${config.explosionRange || 1.5} ô`);
+    if (config.forceMiddleRow) traits.push('Ưu tiên hàng giữa');
+    if (Number.isFinite(config.stopAfterCells)) traits.push(`Đi ${config.stopAfterCells} ô rồi dừng`);
+    if (Number.isFinite(config.stopAtColFromZombieSide)) traits.push(`Dừng tại ô thứ ${config.stopAtColFromZombieSide} từ phía zombie`);
+    if (config.pushPlantsAway) traits.push('Hất cây chạm phải khỏi bản đồ');
+    if (config.randomRowShift) traits.push(`Đổi hàng ngẫu nhiên mỗi ${(config.rowShiftInterval || 0) / 1000}s`);
+    if (config.summonType) traits.push(`Triệu hồi ${ZOMBIE_CONFIG.zombies[config.summonType]?.name || config.summonType} mỗi ${(config.summonInterval || 0) / 1000}s`);
+    if (config.rearSpeedAura) traits.push(`Aura tăng ${(config.rearSpeedAura || 0) * 100}% tốc chạy cho zombie đứng sau`);
+    if (Number.isFinite(config.shieldHp)) traits.push(`Có thanh máu xanh ${config.shieldHp} HP, mất trước máu chính`);
+    if (Number.isFinite(config.phaseTransitionDelay)) traits.push(`Mất sạch máu xanh: bất động ${(config.phaseTransitionDelay || 0) / 1000}s rồi hóa cuồng`);
+    if (Number.isFinite(config.phase2Speed)) traits.push(`Giai đoạn 2: tốc chạy ${config.phase2Speed}`);
+    if (Number.isFinite(config.shootRange) && !Number.isFinite(config.stopAfterCells)) traits.push(`Tầm bắn: ${config.shootRange === Infinity ? 'toàn lane' : config.shootRange + ' ô'}`);
+    if (config.immuneToControl) traits.push('Miễn nhiễm khống chế');
+    if (config.immuneToKnockback) traits.push('Miễn nhiễm đẩy lùi');
+    if (config.immuneToExplosion) traits.push('Miễn nhiễm nổ');
+    if (config.immuneToEffectKill) traits.push('Miễn hiệu ứng kết liễu');
+    if (config.immuneToHypnosis) traits.push('Miễn thôi miên');
+    if (config.hardImmunity) traits.push('Miễn nhiễm cứng');
+    if (config.buffsThayma7) traits.push('Tăng sức mạnh cho Thây ma 7');
+    if (config.spawnsThayma7OnDeath) traits.push('Khi chết gọi Thây ma 7');
+    if (Number.isFinite(config.rowSpan) && config.rowSpan > 1) traits.push(`Chiếm ${config.rowSpan} hàng`);
+    if (Number.isFinite(config.hitHalfWidth)) traits.push(`Hitbox ngang: ${config.hitHalfWidth}`);
+    if (Number.isFinite(config.sizeMultiplier) || Number.isFinite(config.sizeMultiplierX) || Number.isFinite(config.sizeMultiplierY)) {
+      const sx = config.sizeMultiplierX || config.sizeMultiplier || 1;
+      const sy = config.sizeMultiplierY || config.sizeMultiplier || 1;
+      traits.push(`Kích thước hiển thị: ${sx.toFixed(2)}× ngang · ${sy.toFixed(2)}× dọc`);
+    }
+    if (type === 'miniboss1spawn') traits.push('Bản hộ tống của Zombie tương lai');
+    return traits;
+  }
+
+  function renderZombieList() {
+    if (!dom.zombieListContainer) return;
+    dom.zombieListContainer.innerHTML = '';
+
+    Object.entries(ZOMBIE_CONFIG.zombies).forEach(([type, config]) => {
+      const traits = collectZombieTraits(type, config);
+      const stats = [
+        formatZombieStat('Máu gốc', `${config.baseHp ?? 0} HP`),
+        formatZombieStat('Máu xanh', Number.isFinite(config.shieldHp) ? `${config.shieldHp} HP` : 'Không có'),
+        formatZombieStat('Tốc chạy', config.speed ?? 0),
+        formatZombieStat('Sát thương cắn', config.canAttack === false ? 'Không có' : (config.attackDamage ?? 0)),
+        formatZombieStat('Sát thương bắn', config.canShoot || config.rangedAttack ? (config.shootDamage ?? config.rangedDamage ?? 0) : 'Không có'),
+        formatZombieStat('Phần thưởng mặt trời', config.sunReward ?? 0),
+        formatZombieStat('Điểm thưởng', config.scoreReward ?? 0),
+      ];
+
+      const card = document.createElement('article');
+      card.className = 'zombie-card';
+      card.innerHTML = `
+        <div class="zombie-card-head">
+          <div class="zombie-card-thumb">${zombieImageTag(type, config.name)}</div>
+          <div>
+            <h3>${config.name || type}</h3>
+            <div class="selection-meta">Mã: ${type}</div>
+          </div>
+        </div>
+        <div class="detail-grid zombie-stats-grid">
+          <div class="detail-card">${stats.slice(0, 3).join('')}</div>
+          <div class="detail-card">${stats.slice(3).join('')}</div>
+        </div>
+        <div class="detail-card">
+          <strong>Kỹ năng & chỉ số khác</strong>
+          <ul class="detail-list zombie-trait-list">
+            ${(traits.length ? traits : ['Không có nội tại đặc biệt.']).map((item) => `<li>${item}</li>`).join('')}
+          </ul>
+        </div>
+      `;
+      dom.zombieListContainer.appendChild(card);
+    });
+  }
+
+  function showZombieListModal() {
+    renderZombieList();
+    dom.zombieModal?.classList.remove('hidden');
+    dom.zombieModal?.classList.add('visible');
+  }
+
+  function closeZombieListModal() {
+    dom.zombieModal?.classList.remove('visible');
+    dom.zombieModal?.classList.add('hidden');
+  }
+
+
   function resetSelectionSet() {
     window.selectedPlants = new Set();
   }
@@ -290,6 +439,12 @@
     switch (action.type) {
       case 'sunProducer':
         return `Tạo ${action.amount} mặt trời mỗi ${(action.interval / 1000).toFixed(action.interval % 1000 === 0 ? 0 : 1)} giây.`;
+      case 'manaSunProducer':
+        return `Mỗi ${(action.manaInterval / 1000).toFixed(0)} giây nhận ${action.manaPerTick || 1} mana. Đủ ${action.manaThreshold || 100} mana sẽ tạo ${action.sunReward || 300} mặt trời rồi quay về 0 mana.`;
+      case 'manaRapidShooter':
+        return `${bullet.count || 1} viên / ${(action.interval / 1000).toFixed(1)} giây, ${bullet.power || 0} sát thương/viên. Mỗi viên cho ${action.manaGainPerBullet || 1} mana riêng. Đủ ${action.manaThreshold || 100} mana lần đầu sẽ giảm còn ${( (action.boostedInterval || (action.interval || 1000) / 2) / 1000).toFixed(1)} giây mỗi lượt bắn.`;
+      case 'turretBurst':
+        return `Mỗi ${(action.interval / 1000).toFixed(0)} giây xả ${(action.bullet?.rowCount || 3) * (action.bullet?.countPerRow || 10)} viên đạn trong cùng lane. Mỗi viên gây ${action.bullet?.power || 0} sát thương.`;
       case 'shooter':
         return `${bullet.count || 1} viên / ${(action.interval / 1000).toFixed(1)} giây, ${bullet.power || 0} sát thương/viên${bullet.freeze ? ', có làm chậm' : ''}${bullet.knock ? ', có đẩy lùi' : ''}${action.cost ? `, tốn thêm ${action.cost} mặt trời mỗi phát` : ''}.`;
       case 'exploder':
@@ -340,8 +495,29 @@
     dom.detailPlantImage.innerHTML = createImageTag(config.image, config.name);
 
     const extraLines = [];
+    if (type !== 'shovel') extraLines.push('Hồi chiêu mặc định: 3 giây sau mỗi lần trồng. Nếu cây có hồi chiêu riêng dài hơn thì sẽ dùng hồi chiêu dài hơn.');
     if (config.limitPerRow) extraLines.push(`Giới hạn: tối đa ${config.limitPerRow} cây mỗi hàng.`);
     if (type === 'cay19') extraLines.push('Mở khóa: hạ ít nhất 1 Sứ giả khe nứt trong trận.');
+    if (type === 'cay27') {
+      extraLines.push('Chỉ có thể tạo trên sân bằng dung hợp, không xuất hiện trong danh sách chọn cây.');
+      extraLines.push('Công thức: Hướng Dương + Hướng Dương = Hướng Dương 2 đầu.');
+      extraLines.push('Thao tác: giữ Shift rồi kéo 1 Hướng Dương vào Hướng Dương còn lại để dung hợp.');
+      extraLines.push('Cây có 25 máu, mỗi 1 giây nhận 10 mana. Đủ 100 mana sẽ tiêu hết 100 mana và tạo 300 mặt trời rồi tích lại từ đầu.');
+    }
+    if (type === 'cay28') {
+      extraLines.push('Chỉ có thể tạo trên sân bằng dung hợp, không xuất hiện trong danh sách chọn cây.');
+      extraLines.push('Công thức: Pea 2 đầu + Pea 2 đầu = Peashooter 6 nòng.');
+      extraLines.push('Thao tác: giữ Shift rồi kéo 1 Pea 2 đầu vào Pea 2 đầu còn lại để dung hợp.');
+      extraLines.push('Cây có 25 máu, mỗi 1 giây bắn 4 viên đạn, mỗi viên gây 5 sát thương và cho cây 1 mana riêng.');
+      extraLines.push('Khi đủ 100 mana lần đầu, riêng cây đó sẽ bắn nhanh gấp đôi vĩnh viễn. Mana không dùng chung giữa nhiều cây.');
+    }
+    if (type === 'cay29') {
+      extraLines.push('Chỉ có thể tạo trên sân bằng dung hợp, không xuất hiện trong danh sách chọn cây.');
+      extraLines.push('Công thức: cay27 + cay27 = Gatling Pea Turret (tức Hướng Dương 2 đầu + Hướng Dương 2 đầu).');
+      extraLines.push('Thao tác: giữ Shift rồi kéo 1 Hướng Dương 2 đầu vào cây Hướng Dương 2 đầu còn lại để dung hợp.');
+      extraLines.push('Cây có 1000 máu, cứ 10 giây xả 1 loạt đạn cực dày trong cùng lane.');
+      extraLines.push('Mỗi loạt gồm 3 hàng đạn xếp sát nhau, mỗi hàng 10 viên, mỗi viên gây 20 sát thương.');
+    }
     if (type === 'cay20') {
       extraLines.push('Chỉ có thể tạo trên sân bằng dung hợp, không xuất hiện trong danh sách chọn cây.');
       extraLines.push('Công thức: Hướng dương + Pea → Cây dung hợp 20.');
@@ -568,6 +744,7 @@
       applySuggestedBasicSelection();
     });
     dom.showFusionListBtn?.addEventListener('click', showFusionListModal);
+    dom.showZombieListBtn?.addEventListener('click', showZombieListModal);
     dom.closeDetailBtn.addEventListener('click', closePlantDetail);
     dom.modal.addEventListener('click', (event) => {
       if (event.target === dom.modal) closePlantDetail();
@@ -575,6 +752,10 @@
     dom.closeFusionListBtn?.addEventListener('click', closeFusionListModal);
     dom.fusionModal?.addEventListener('click', (event) => {
       if (event.target === dom.fusionModal) closeFusionListModal();
+    });
+    dom.closeZombieListBtn?.addEventListener('click', closeZombieListModal);
+    dom.zombieModal?.addEventListener('click', (event) => {
+      if (event.target === dom.zombieModal) closeZombieListModal();
     });
     dom.resetPlantsBtn.addEventListener('click', () => {
       if (!confirm('Bạn muốn xóa đội hình đã lưu và chọn lại từ đầu?')) return;
@@ -586,6 +767,7 @@
       if (event.key === 'Escape' && dom.modal.classList.contains('visible')) closePlantDetail();
       if (event.key === 'Escape' && dom.guideModal?.classList.contains('visible')) closeGuideModal();
       if (event.key === 'Escape' && dom.fusionModal?.classList.contains('visible')) closeFusionListModal();
+      if (event.key === 'Escape' && dom.zombieModal?.classList.contains('visible')) closeZombieListModal();
       if (event.key === 'Escape' && dom.difficultySelectScreen?.classList.contains('visible')) hideDifficultySelectionScreen(true);
     });
   }
@@ -600,6 +782,8 @@
   window.closePlantDetail = closePlantDetail;
   window.showFusionListModal = showFusionListModal;
   window.closeFusionListModal = closeFusionListModal;
+  window.showZombieListModal = showZombieListModal;
+  window.closeZombieListModal = closeZombieListModal;
   window.updateShopWithSelectedPlants = updateShopWithSelectedPlants;
   window.loadPlantSelection = loadPlantSelection;
   window.savePlantSelection = savePlantSelection;
